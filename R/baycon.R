@@ -9,7 +9,7 @@
 #' @param ... Arguments passed to `rstan::sampling` (e.g. iter, chains)
 #' @return An object of type vector (list) with mean estimates from posterior (and mle estimates)
 
-baycon <- function(numGenes = 1000, numCellTypes = 2, bulkExpression = p_bulkExpressionSimMat, sigmat = p_simSigMatTwo, mle = F, ...){
+baycon <- function(numGenes = 600, numCellTypes = 2, bulkExpression = p_bulkExpressionSimMat, sigmat = p_simSigMatTwo, mle = F, ...){
 
   mvnErrorDistList <- list()
   pEstimatesList <- list()

@@ -9,7 +9,9 @@
 #' @param ... Arguments passed to `rstan::sampling` (e.g. iter, chains)
 #' @return An object of type vector (list) with mean estimates from posterior (and mle estimates)
 
-baycon <- function(numGenes = 600, numCellTypes = 2, bulkExpression = p_bulkExpressionSimMat, sigmat = p_simSigMatTwo, mle = F, ...){
+baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(p_simSigMatTwo),
+                   bulkExpression = p_bulkExpressionSimMat, sigmat = p_simSigMatTwo,
+                   mle = F, ...){
 
   mvnErrorDistList <- list()
   pEstimatesList <- list()
@@ -25,11 +27,12 @@ baycon <- function(numGenes = 600, numCellTypes = 2, bulkExpression = p_bulkExpr
                      exprMixVec = bulkExpression[, i],
                      sigMat = sigmat)
 
-    nmfOut <- rstan::sampling(stanmodels$indSigmat, data = standata, chains = 3, iter = 2000, init = 0, ...);
-    stanSumNmf <- summary(nmfOut)$summary
+    nmfOut <- rstan::sampling(stanmodels$indSigmat, data = standata, ...);
+    stanSumNmf <- as.data.frame(nmfOut)
+    means <- apply(stanSumNmf, 2, mean)
 
     # store the purity point estimtes here (we're using the posterior mean. *Would mode be better??? Probably*)
-    pEstimatesList[[i]] <- stanSumNmf[c(1,2), 1]
+    pEstimatesList[[i]] <- means[1:2]
 
     if (mle) {
       # I need some error handling code because of general mlest buggyness.
@@ -40,7 +43,9 @@ baycon <- function(numGenes = 600, numCellTypes = 2, bulkExpression = p_bulkExpr
         error = function(cond) {
           message("***ERROR HERE***")
           message(cond)
-          i = i - 1 # Just literally try again until it works??? Seems to not work for no apparent reason sometimes. Some stochastic component here?
+          i = i - 1 # Just literally try again until it works???
+          # Seems to not work for no apparent reason sometimes.
+          # Some stochastic component here?
           # Choose a return value in case of error
           return(NA)
         }
@@ -48,9 +53,9 @@ baycon <- function(numGenes = 600, numCellTypes = 2, bulkExpression = p_bulkExpr
     }
 
     # also capture the error estimates with a univariate normal distribution.
-    sd1[i] <- sd(as.data.frame(nmfOut)[1:1000, 1])
-    sd2[i] <- sd(as.data.frame(nmfOut)[1:1000, 2])
-    print(paste("*********** ITERATION: ", i))
+    sd1[i] <- sd(stanSumNmf[1:1000, 1])
+    sd2[i] <- sd(stanSumNmf[1:1000, 2])
+    print(paste("*********** ITERATION: ", i, " ***********"))
   }
 
   # save the estimates in a matrix

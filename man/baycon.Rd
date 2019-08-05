@@ -20,7 +20,7 @@ baycon(numGenes = nrow(p_bulkExpressionSimMat),
 
 \item{mle}{a logical indicating whether we need mle or not}
 
-\item{...}{arguments to be passed to `rstan::sampling` (e.g. iter, chains)}
+\item{...}{arguments to be passed to `rstan::sampling` (e.g. chains, iter, init, verbose, refresh)}
 }
 \value{
 An object of type vector (list) with mean estimates from posterior (and mle estimates)

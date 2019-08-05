@@ -6,7 +6,7 @@
 #' @param bulkExpression bulk expression matrix
 #' @param sigmat signature matrix
 #' @param mle a logical indicating whether we need mle or not
-#' @param ... arguments to be passed to `rstan::sampling` (e.g. iter, chains)
+#' @param ... arguments to be passed to `rstan::sampling` (e.g. chains, iter, init, verbose, refresh)
 #' @return An object of type vector (list) with mean estimates from posterior (and mle estimates)
 
 baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(p_simSigMatTwo),
@@ -15,10 +15,6 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
 
   mvnErrorDistList <- list()
   pEstimatesList <- list()
-  sd1 <- numeric()
-  sd2 <- numeric()
-
-  data = list()
 
   for(i in 1:ncol(bulkExpression)) {
 
@@ -29,21 +25,23 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
 
     nmfOut <- rstan::sampling(stanmodels$indSigmat, data = standata, ...);
     stanSumNmf <- as.data.frame(nmfOut)
+    iters <- nrow(stanSumNmf)
     means <- apply(stanSumNmf, 2, mean)
 
     # store the purity point estimtes here (we're using the posterior mean. *Would mode be better??? Probably*)
-    pEstimatesList[[i]] <- means[1:2]
+    pEstimatesList[[i]] <- means[1:numCellTypes]
 
     if (mle) {
       # I need some error handling code because of general mlest buggyness.
-      # Question: WHY does thisjust bomb sometimes????? Seems quite random. There must be a better approach here.
+      # Question: WHY does this just bomb sometimes ? Seems quite random. There must be a better approach here.
       tryCatch(
         # fit Multivariate normal by maximum liklihood, which will model the error.
-        mvnErrorDistList[[i]] <- mvnmle::mlest(data.matrix(as.data.frame(nmfOut)[1:numGenes, 1:numCellTypes])),
+        mvnErrorDistList[[i]] <- mvnmle::mlest(data.matrix(as.data.frame(nmfOut)[1:iters, 1:numCellTypes])),
         error = function(cond) {
           message("***ERROR HERE***")
           message(cond)
-          i = i - 1 # Just literally try again until it works???
+          # Just literally try again until it works?
+          i = i - 1
           # Seems to not work for no apparent reason sometimes.
           # Some stochastic component here?
           # Choose a return value in case of error
@@ -53,8 +51,10 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
     }
 
     # also capture the error estimates with a univariate normal distribution.
-    sd1[i] <- sd(stanSumNmf[1:1000, 1])
-    sd2[i] <- sd(stanSumNmf[1:1000, 2])
+    # TODO: we need to remove the warmup samples before estimating error
+    # EDIT: this might be unnecessary as as.data.frame takes care of this
+    # docs: Coerce the draws (without warmup) to an array, matrix or data frame. See as.array.stanfit.
+    errors <- apply(stanSumNmf[1:iters, 1:numCellTypes], 2, sd)
     print(paste("*********** ITERATION: ", i, " ***********"))
   }
 
@@ -67,13 +67,14 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
     # NB: Some of these dont work. I don't know why. Need to find a solution here.
     mvnPropList <- list()
     nullInd <- numeric()
-    for(i in 1:1000)
+    for(i in 1:ncol(bulkExpression))
     {
       mvnPropList[[i]] <- mvnErrorDistList[[i]]$muhat
 
       if(is.null(mvnErrorDistList[[i]]$muhat))
       {
         nullInd <- c(nullInd, i)
+        message("NA detected")
         mvnPropList[[i]] <- c(NA, NA)
       }
     }

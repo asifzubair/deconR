@@ -4,9 +4,9 @@
 #' @param numGenes numeric of number of genes
 #' @param numCellTypes numeric of number of cell types
 #' @param bulkExpression bulk expression matrix
-#' @param sigMat signature matrix
+#' @param sigmat signature matrix
 #' @param mle a logical indicating whether we need mle or not
-#' @param ... Arguments passed to `rstan::sampling` (e.g. iter, chains)
+#' @param ... arguments to be passed to `rstan::sampling` (e.g. iter, chains)
 #' @return An object of type vector (list) with mean estimates from posterior (and mle estimates)
 
 baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(p_simSigMatTwo),
@@ -63,7 +63,7 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
   propMatStanEsts <- do.call(rbind, pEstimatesList)
 
   if (mle){
-    # Pull out the proportion estimates that were quantified from the maximum liklihood estimtes of the spatial data.
+    # Pull out the proportion estimates that were quantified from the maximum likelihood estimates of the spatial data.
     # NB: Some of these dont work. I don't know why. Need to find a solution here.
     mvnPropList <- list()
     nullInd <- numeric()

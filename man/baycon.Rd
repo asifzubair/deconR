@@ -4,7 +4,8 @@
 \alias{baycon}
 \title{Bayesian deconvolution with Stan}
 \usage{
-baycon(numGenes = 1000, numCellTypes = 2,
+baycon(numGenes = nrow(p_bulkExpressionSimMat),
+  numCellTypes = ncol(p_simSigMatTwo),
   bulkExpression = p_bulkExpressionSimMat, sigmat = p_simSigMatTwo,
   mle = F, ...)
 }
@@ -15,11 +16,11 @@ baycon(numGenes = 1000, numCellTypes = 2,
 
 \item{bulkExpression}{bulk expression matrix}
 
+\item{sigmat}{signature matrix}
+
 \item{mle}{a logical indicating whether we need mle or not}
 
-\item{...}{Arguments passed to `rstan::sampling` (e.g. iter, chains)}
-
-\item{sigMat}{signature matrix}
+\item{...}{arguments to be passed to `rstan::sampling` (e.g. iter, chains)}
 }
 \value{
 An object of type vector (list) with mean estimates from posterior (and mle estimates)

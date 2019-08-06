@@ -16,7 +16,8 @@ makeSimDataset(sdCancer = 1, sdNormal = 1, seed = 12345)
 \value{
 An object of type list with following names:
 
-\code{cancerExpressionSimMat, normalExpressionSimMat, bulkExpressionSimMat, simulatedEffectSizesCancer, simulatedEffectSizesNormal}
+\code{cancerExpressionSimMat, normalExpressionSimMat, bulkExpressionSimMat,
+simulatedEffectSizesCancer, simulatedEffectSizesNormal}
 }
 \description{
 Function to make a simple simulated dataset.

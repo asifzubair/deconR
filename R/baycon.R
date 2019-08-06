@@ -18,6 +18,7 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
 
   for(i in 1:ncol(bulkExpression)) {
 
+    print(paste("*********** ITERATION: ", i, " ***********"))
     standata <- list(numGenes = numGenes,
                      numCellTypes = numCellTypes,
                      exprMixVec = bulkExpression[, i],
@@ -55,7 +56,7 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
     # EDIT: this might be unnecessary as as.data.frame takes care of this
     # docs: Coerce the draws (without warmup) to an array, matrix or data frame. See as.array.stanfit.
     errors <- apply(stanSumNmf[1:iters, 1:numCellTypes], 2, sd)
-    print(paste("*********** ITERATION: ", i, " ***********"))
+    print(paste("*********** Done With Sample: ", i, " ***********"))
   }
 
   # save the estimates in a matrix

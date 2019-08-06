@@ -11,13 +11,17 @@
 
 // The input data.
 data{
-  int<lower=1> n; // number of observations/samples...
+  // number of observations/samples...
+  int<lower=1> n;
   //int<lower=0, upper=2> genotype[n]; // Genotype
   vector[n] genotype;
-  vector[n] y; // the expression data
+  // the expression data
+  vector[n] y;
 
-  vector[n] measProp2; // the "measured" cell type proportions (i.e. the point estimate of these)
-  vector[n] sd2; // the measurement error for each proportion estimate
+  // the "measured" cell type proportions (i.e. the point estimate of these)
+  vector[n] measProp2;
+  // the measurement error for each proportion estimate
+  vector[n] sd2;
 }
 
 // The parameters accepted by the model.

@@ -8,7 +8,7 @@
 #' @return \code{cancerExpressionSimMat, normalExpressionSimMat, bulkExpressionSimMat,
 #' simulatedEffectSizesCancer, simulatedEffectSizesNormal}
 
-makeSimDataset <- function(sdCancer=1, sdNormal=1, seed = 12345)
+makeSimDataset <- function(sdCancer = 1, sdNormal = 1, seed = 12345)
 {
   # Setting seed before running all of the below will ensure consistent result each time this is run
   set.seed(seed)

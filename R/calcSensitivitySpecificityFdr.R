@@ -1,10 +1,10 @@
 #'
-#'
-#'
-#'
-#'@return An object of list with the following names:
-#'@return \code{Sensitivty, Specificty, MeasuredFalseDiscoveryRate,
-#' numSigEQtls, FalseDiscoveriesIndex}
+#' @param estimatedBetas
+#' @param pValues
+#' @param realBetas
+#' @param fdr
+#' @return An object of list with the following names:
+#' @return \code{Sensitivty, Specificty, MeasuredFalseDiscoveryRate, numSigEQtls, FalseDiscoveriesIndex}
 
 calcSensitivitySpecificityFdr <- function(estimatedBetas, pValues, realBetas, fdr = 0.2) {
   # Sensitivty (true positive rate) = number of true positives / number of real positives. (TP/P)

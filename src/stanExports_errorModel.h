@@ -38,13 +38,14 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_errorModel");
-    reader.add_event(91, 89, "end", "model_errorModel");
+    reader.add_event(105, 103, "end", "model_errorModel");
     return reader;
 }
 
 #include <stan_meta_header.hpp>
  class model_errorModel : public prob_grad {
 private:
+        int numCellTypes;
         int n;
         vector_d genotype;
         vector_d y;
@@ -86,7 +87,15 @@ public:
 
         try {
             // initialize data block variables from context__
-            current_statement_begin__ = 14;
+            current_statement_begin__ = 15;
+            context__.validate_dims("data initialization", "numCellTypes", "int", context__.to_vec());
+            numCellTypes = int(0);
+            vals_i__ = context__.vals_i("numCellTypes");
+            pos__ = 0;
+            numCellTypes = vals_i__[pos__++];
+            check_greater_or_equal(function__, "numCellTypes", numCellTypes, 0);
+
+            current_statement_begin__ = 17;
             context__.validate_dims("data initialization", "n", "int", context__.to_vec());
             n = int(0);
             vals_i__ = context__.vals_i("n");
@@ -94,7 +103,7 @@ public:
             n = vals_i__[pos__++];
             check_greater_or_equal(function__, "n", n, 1);
 
-            current_statement_begin__ = 16;
+            current_statement_begin__ = 19;
             validate_non_negative_index("genotype", "n", n);
             context__.validate_dims("data initialization", "genotype", "vector_d", context__.to_vec(n));
             genotype = Eigen::Matrix<double, Eigen::Dynamic, 1>(n);
@@ -105,7 +114,7 @@ public:
                 genotype(j_1__) = vals_r__[pos__++];
             }
 
-            current_statement_begin__ = 17;
+            current_statement_begin__ = 21;
             validate_non_negative_index("y", "n", n);
             context__.validate_dims("data initialization", "y", "vector_d", context__.to_vec(n));
             y = Eigen::Matrix<double, Eigen::Dynamic, 1>(n);
@@ -116,7 +125,7 @@ public:
                 y(j_1__) = vals_r__[pos__++];
             }
 
-            current_statement_begin__ = 19;
+            current_statement_begin__ = 25;
             validate_non_negative_index("measProp2", "n", n);
             context__.validate_dims("data initialization", "measProp2", "vector_d", context__.to_vec(n));
             measProp2 = Eigen::Matrix<double, Eigen::Dynamic, 1>(n);
@@ -127,7 +136,7 @@ public:
                 measProp2(j_1__) = vals_r__[pos__++];
             }
 
-            current_statement_begin__ = 20;
+            current_statement_begin__ = 28;
             validate_non_negative_index("sd2", "n", n);
             context__.validate_dims("data initialization", "sd2", "vector_d", context__.to_vec(n));
             sd2 = Eigen::Matrix<double, Eigen::Dynamic, 1>(n);
@@ -147,19 +156,15 @@ public:
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 27;
+            current_statement_begin__ = 35;
             num_params_r__ += 1;
-            current_statement_begin__ = 30;
-            num_params_r__ += 1;
-            current_statement_begin__ = 31;
-            num_params_r__ += 1;
-            current_statement_begin__ = 32;
-            num_params_r__ += 1;
-            current_statement_begin__ = 36;
-            num_params_r__ += 1;
-            current_statement_begin__ = 37;
-            num_params_r__ += 1;
-            current_statement_begin__ = 40;
+            current_statement_begin__ = 38;
+            validate_non_negative_index("beta", "numCellTypes", numCellTypes);
+            num_params_r__ += numCellTypes;
+            current_statement_begin__ = 44;
+            validate_non_negative_index("prec", "numCellTypes", numCellTypes);
+            num_params_r__ += numCellTypes;
+            current_statement_begin__ = 47;
             validate_non_negative_index("trueProp2", "n", n);
             num_params_r__ += n;
         } catch (const std::exception& e) {
@@ -183,7 +188,7 @@ public:
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
 
-        current_statement_begin__ = 27;
+        current_statement_begin__ = 35;
         if (!(context__.contains_r("beta0")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta0 missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("beta0");
@@ -197,77 +202,43 @@ public:
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta0: ") + e.what()), current_statement_begin__, prog_reader__());
         }
 
-        current_statement_begin__ = 30;
-        if (!(context__.contains_r("beta1")))
-            stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta1 missing")), current_statement_begin__, prog_reader__());
-        vals_r__ = context__.vals_r("beta1");
+        current_statement_begin__ = 38;
+        if (!(context__.contains_r("beta")))
+            stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta missing")), current_statement_begin__, prog_reader__());
+        vals_r__ = context__.vals_r("beta");
         pos__ = 0U;
-        context__.validate_dims("parameter initialization", "beta1", "double", context__.to_vec());
-        double beta1(0);
-        beta1 = vals_r__[pos__++];
+        validate_non_negative_index("beta", "numCellTypes", numCellTypes);
+        context__.validate_dims("parameter initialization", "beta", "vector_d", context__.to_vec(numCellTypes));
+        Eigen::Matrix<double, Eigen::Dynamic, 1> beta(numCellTypes);
+        size_t beta_j_1_max__ = numCellTypes;
+        for (size_t j_1__ = 0; j_1__ < beta_j_1_max__; ++j_1__) {
+            beta(j_1__) = vals_r__[pos__++];
+        }
         try {
-            writer__.scalar_unconstrain(beta1);
+            writer__.vector_unconstrain(beta);
         } catch (const std::exception& e) {
-            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta1: ") + e.what()), current_statement_begin__, prog_reader__());
+            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta: ") + e.what()), current_statement_begin__, prog_reader__());
         }
 
-        current_statement_begin__ = 31;
-        if (!(context__.contains_r("beta2")))
-            stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta2 missing")), current_statement_begin__, prog_reader__());
-        vals_r__ = context__.vals_r("beta2");
+        current_statement_begin__ = 44;
+        if (!(context__.contains_r("prec")))
+            stan::lang::rethrow_located(std::runtime_error(std::string("Variable prec missing")), current_statement_begin__, prog_reader__());
+        vals_r__ = context__.vals_r("prec");
         pos__ = 0U;
-        context__.validate_dims("parameter initialization", "beta2", "double", context__.to_vec());
-        double beta2(0);
-        beta2 = vals_r__[pos__++];
+        validate_non_negative_index("prec", "numCellTypes", numCellTypes);
+        context__.validate_dims("parameter initialization", "prec", "vector_d", context__.to_vec(numCellTypes));
+        Eigen::Matrix<double, Eigen::Dynamic, 1> prec(numCellTypes);
+        size_t prec_j_1_max__ = numCellTypes;
+        for (size_t j_1__ = 0; j_1__ < prec_j_1_max__; ++j_1__) {
+            prec(j_1__) = vals_r__[pos__++];
+        }
         try {
-            writer__.scalar_unconstrain(beta2);
+            writer__.vector_lb_unconstrain(0, prec);
         } catch (const std::exception& e) {
-            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta2: ") + e.what()), current_statement_begin__, prog_reader__());
+            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable prec: ") + e.what()), current_statement_begin__, prog_reader__());
         }
 
-        current_statement_begin__ = 32;
-        if (!(context__.contains_r("beta3")))
-            stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta3 missing")), current_statement_begin__, prog_reader__());
-        vals_r__ = context__.vals_r("beta3");
-        pos__ = 0U;
-        context__.validate_dims("parameter initialization", "beta3", "double", context__.to_vec());
-        double beta3(0);
-        beta3 = vals_r__[pos__++];
-        try {
-            writer__.scalar_unconstrain(beta3);
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable beta3: ") + e.what()), current_statement_begin__, prog_reader__());
-        }
-
-        current_statement_begin__ = 36;
-        if (!(context__.contains_r("prec1")))
-            stan::lang::rethrow_located(std::runtime_error(std::string("Variable prec1 missing")), current_statement_begin__, prog_reader__());
-        vals_r__ = context__.vals_r("prec1");
-        pos__ = 0U;
-        context__.validate_dims("parameter initialization", "prec1", "double", context__.to_vec());
-        double prec1(0);
-        prec1 = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0, prec1);
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable prec1: ") + e.what()), current_statement_begin__, prog_reader__());
-        }
-
-        current_statement_begin__ = 37;
-        if (!(context__.contains_r("prec2")))
-            stan::lang::rethrow_located(std::runtime_error(std::string("Variable prec2 missing")), current_statement_begin__, prog_reader__());
-        vals_r__ = context__.vals_r("prec2");
-        pos__ = 0U;
-        context__.validate_dims("parameter initialization", "prec2", "double", context__.to_vec());
-        double prec2(0);
-        prec2 = vals_r__[pos__++];
-        try {
-            writer__.scalar_lb_unconstrain(0, prec2);
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable prec2: ") + e.what()), current_statement_begin__, prog_reader__());
-        }
-
-        current_statement_begin__ = 40;
+        current_statement_begin__ = 47;
         if (!(context__.contains_r("trueProp2")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable trueProp2 missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("trueProp2");
@@ -317,7 +288,7 @@ public:
             stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
 
             // model parameters
-            current_statement_begin__ = 27;
+            current_statement_begin__ = 35;
             local_scalar_t__ beta0;
             (void) beta0;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -325,47 +296,23 @@ public:
             else
                 beta0 = in__.scalar_constrain();
 
-            current_statement_begin__ = 30;
-            local_scalar_t__ beta1;
-            (void) beta1;  // dummy to suppress unused var warning
+            current_statement_begin__ = 38;
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> beta;
+            (void) beta;  // dummy to suppress unused var warning
             if (jacobian__)
-                beta1 = in__.scalar_constrain(lp__);
+                beta = in__.vector_constrain(numCellTypes, lp__);
             else
-                beta1 = in__.scalar_constrain();
+                beta = in__.vector_constrain(numCellTypes);
 
-            current_statement_begin__ = 31;
-            local_scalar_t__ beta2;
-            (void) beta2;  // dummy to suppress unused var warning
+            current_statement_begin__ = 44;
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> prec;
+            (void) prec;  // dummy to suppress unused var warning
             if (jacobian__)
-                beta2 = in__.scalar_constrain(lp__);
+                prec = in__.vector_lb_constrain(0, numCellTypes, lp__);
             else
-                beta2 = in__.scalar_constrain();
+                prec = in__.vector_lb_constrain(0, numCellTypes);
 
-            current_statement_begin__ = 32;
-            local_scalar_t__ beta3;
-            (void) beta3;  // dummy to suppress unused var warning
-            if (jacobian__)
-                beta3 = in__.scalar_constrain(lp__);
-            else
-                beta3 = in__.scalar_constrain();
-
-            current_statement_begin__ = 36;
-            local_scalar_t__ prec1;
-            (void) prec1;  // dummy to suppress unused var warning
-            if (jacobian__)
-                prec1 = in__.scalar_lb_constrain(0, lp__);
-            else
-                prec1 = in__.scalar_lb_constrain(0);
-
-            current_statement_begin__ = 37;
-            local_scalar_t__ prec2;
-            (void) prec2;  // dummy to suppress unused var warning
-            if (jacobian__)
-                prec2 = in__.scalar_lb_constrain(0, lp__);
-            else
-                prec2 = in__.scalar_lb_constrain(0);
-
-            current_statement_begin__ = 40;
+            current_statement_begin__ = 47;
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> trueProp2;
             (void) trueProp2;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -374,49 +321,60 @@ public:
                 trueProp2 = in__.vector_constrain(n);
 
             // transformed parameters
-            current_statement_begin__ = 47;
-            local_scalar_t__ sigma1;
-            (void) sigma1;  // dummy to suppress unused var warning
-            stan::math::initialize(sigma1, DUMMY_VAR__);
-            stan::math::fill(sigma1, DUMMY_VAR__);
+            current_statement_begin__ = 55;
+            validate_non_negative_index("sigma", "numCellTypes", numCellTypes);
+            Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> sigma(numCellTypes);
+            stan::math::initialize(sigma, DUMMY_VAR__);
+            stan::math::fill(sigma, DUMMY_VAR__);
 
-            current_statement_begin__ = 48;
+            current_statement_begin__ = 56;
             local_scalar_t__ sigma2;
             (void) sigma2;  // dummy to suppress unused var warning
             stan::math::initialize(sigma2, DUMMY_VAR__);
             stan::math::fill(sigma2, DUMMY_VAR__);
 
-            current_statement_begin__ = 51;
+            current_statement_begin__ = 60;
             local_scalar_t__ betaNormal;
             (void) betaNormal;  // dummy to suppress unused var warning
             stan::math::initialize(betaNormal, DUMMY_VAR__);
             stan::math::fill(betaNormal, DUMMY_VAR__);
 
             // transformed parameters block statements
-            current_statement_begin__ = 52;
-            stan::math::assign(betaNormal, (beta1 + beta3));
-            current_statement_begin__ = 55;
-            stan::math::assign(sigma1, stan::math::sqrt((1 / prec1)));
-            current_statement_begin__ = 56;
-            stan::math::assign(sigma2, stan::math::sqrt((1 / prec2)));
+            current_statement_begin__ = 61;
+            stan::math::assign(betaNormal, (get_base1(beta, 1, "beta", 1) + get_base1(beta, 3, "beta", 1)));
+            current_statement_begin__ = 65;
+            stan::model::assign(sigma, 
+                        stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
+                        stan::math::sqrt((1 / get_base1(prec, 1, "prec", 1))), 
+                        "assigning variable sigma");
+            current_statement_begin__ = 66;
+            stan::model::assign(sigma, 
+                        stan::model::cons_list(stan::model::index_uni(2), stan::model::nil_index_list()), 
+                        stan::math::sqrt((1 / get_base1(prec, 2, "prec", 1))), 
+                        "assigning variable sigma");
 
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
 
-            current_statement_begin__ = 47;
-            if (stan::math::is_uninitialized(sigma1)) {
-                std::stringstream msg__;
-                msg__ << "Undefined transformed parameter: sigma1";
-                stan::lang::rethrow_located(std::runtime_error(std::string("Error initializing variable sigma1: ") + msg__.str()), current_statement_begin__, prog_reader__());
+            current_statement_begin__ = 55;
+            size_t sigma_j_1_max__ = numCellTypes;
+            for (size_t j_1__ = 0; j_1__ < sigma_j_1_max__; ++j_1__) {
+                if (stan::math::is_uninitialized(sigma(j_1__))) {
+                    std::stringstream msg__;
+                    msg__ << "Undefined transformed parameter: sigma" << "(" << j_1__ << ")";
+                    stan::lang::rethrow_located(std::runtime_error(std::string("Error initializing variable sigma: ") + msg__.str()), current_statement_begin__, prog_reader__());
+                }
             }
-            current_statement_begin__ = 48;
+            check_greater_or_equal(function__, "sigma", sigma, 0);
+
+            current_statement_begin__ = 56;
             if (stan::math::is_uninitialized(sigma2)) {
                 std::stringstream msg__;
                 msg__ << "Undefined transformed parameter: sigma2";
                 stan::lang::rethrow_located(std::runtime_error(std::string("Error initializing variable sigma2: ") + msg__.str()), current_statement_begin__, prog_reader__());
             }
-            current_statement_begin__ = 51;
+            current_statement_begin__ = 60;
             if (stan::math::is_uninitialized(betaNormal)) {
                 std::stringstream msg__;
                 msg__ << "Undefined transformed parameter: betaNormal";
@@ -425,27 +383,27 @@ public:
 
             // model body
 
-            current_statement_begin__ = 65;
+            current_statement_begin__ = 75;
             lp_accum__.add(normal_log<propto__>(beta0, 0.0, 10));
-            current_statement_begin__ = 66;
-            lp_accum__.add(normal_log<propto__>(beta1, 0.0, 10));
-            current_statement_begin__ = 67;
-            lp_accum__.add(normal_log<propto__>(beta2, 0.0, 10));
-            current_statement_begin__ = 68;
-            lp_accum__.add(normal_log<propto__>(beta3, 0.0, 10));
-            current_statement_begin__ = 69;
-            lp_accum__.add(gamma_log<propto__>(prec1, (1.0 / 10), (1.0 / 10)));
-            current_statement_begin__ = 70;
-            lp_accum__.add(gamma_log<propto__>(prec2, (1.0 / 10), (1.0 / 10)));
-            current_statement_begin__ = 74;
-            lp_accum__.add(normal_log<propto__>(trueProp2, .5, 5));
+            current_statement_begin__ = 76;
+            lp_accum__.add(normal_log<propto__>(get_base1(beta, 1, "beta", 1), 0.0, 10));
+            current_statement_begin__ = 77;
+            lp_accum__.add(normal_log<propto__>(get_base1(beta, 2, "beta", 1), 0.0, 10));
             current_statement_begin__ = 78;
+            lp_accum__.add(normal_log<propto__>(get_base1(beta, 3, "beta", 1), 0.0, 10));
+            current_statement_begin__ = 79;
+            lp_accum__.add(gamma_log<propto__>(get_base1(prec, 1, "prec", 1), (1.0 / 10), (1.0 / 10)));
+            current_statement_begin__ = 80;
+            lp_accum__.add(gamma_log<propto__>(get_base1(prec, 2, "prec", 1), (1.0 / 10), (1.0 / 10)));
+            current_statement_begin__ = 86;
+            lp_accum__.add(normal_log<propto__>(trueProp2, .5, 5));
+            current_statement_begin__ = 91;
             lp_accum__.add(normal_log<propto__>(measProp2, trueProp2, sd2));
-            current_statement_begin__ = 83;
+            current_statement_begin__ = 97;
             for (int i = 1; i <= n; ++i) {
 
-                current_statement_begin__ = 85;
-                lp_accum__.add(normal_log<propto__>(get_base1(y, i, "y", 1), (((beta0 + (beta1 * get_base1(genotype, i, "genotype", 1))) + (beta2 * get_base1(trueProp2, i, "trueProp2", 1))) + (beta3 * (get_base1(trueProp2, i, "trueProp2", 1) * get_base1(genotype, i, "genotype", 1)))), stan::math::sqrt(((((1 - (2 * get_base1(trueProp2, i, "trueProp2", 1))) + pow(get_base1(trueProp2, i, "trueProp2", 1), 2)) / prec1) + (pow(get_base1(trueProp2, i, "trueProp2", 1), 2) / prec2)))));
+                current_statement_begin__ = 99;
+                lp_accum__.add(normal_log<propto__>(get_base1(y, i, "y", 1), (((beta0 + (get_base1(beta, 1, "beta", 1) * get_base1(genotype, i, "genotype", 1))) + (get_base1(beta, 2, "beta", 1) * get_base1(trueProp2, i, "trueProp2", 1))) + (get_base1(beta, 3, "beta", 1) * (get_base1(trueProp2, i, "trueProp2", 1) * get_base1(genotype, i, "genotype", 1)))), stan::math::sqrt(((((1 - (2 * get_base1(trueProp2, i, "trueProp2", 1))) + pow(get_base1(trueProp2, i, "trueProp2", 1), 2)) / get_base1(prec, 1, "prec", 1)) + (pow(get_base1(trueProp2, i, "trueProp2", 1), 2) / get_base1(prec, 2, "prec", 1))))));
             }
 
         } catch (const std::exception& e) {
@@ -474,13 +432,10 @@ public:
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
         names__.push_back("beta0");
-        names__.push_back("beta1");
-        names__.push_back("beta2");
-        names__.push_back("beta3");
-        names__.push_back("prec1");
-        names__.push_back("prec2");
+        names__.push_back("beta");
+        names__.push_back("prec");
         names__.push_back("trueProp2");
-        names__.push_back("sigma1");
+        names__.push_back("sigma");
         names__.push_back("sigma2");
         names__.push_back("betaNormal");
     }
@@ -492,19 +447,16 @@ public:
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(numCellTypes);
         dimss__.push_back(dims__);
         dims__.resize(0);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
+        dims__.push_back(numCellTypes);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(n);
         dimss__.push_back(dims__);
         dims__.resize(0);
+        dims__.push_back(numCellTypes);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dimss__.push_back(dims__);
@@ -531,20 +483,17 @@ public:
         double beta0 = in__.scalar_constrain();
         vars__.push_back(beta0);
 
-        double beta1 = in__.scalar_constrain();
-        vars__.push_back(beta1);
+        Eigen::Matrix<double, Eigen::Dynamic, 1> beta = in__.vector_constrain(numCellTypes);
+        size_t beta_j_1_max__ = numCellTypes;
+        for (size_t j_1__ = 0; j_1__ < beta_j_1_max__; ++j_1__) {
+            vars__.push_back(beta(j_1__));
+        }
 
-        double beta2 = in__.scalar_constrain();
-        vars__.push_back(beta2);
-
-        double beta3 = in__.scalar_constrain();
-        vars__.push_back(beta3);
-
-        double prec1 = in__.scalar_lb_constrain(0);
-        vars__.push_back(prec1);
-
-        double prec2 = in__.scalar_lb_constrain(0);
-        vars__.push_back(prec2);
+        Eigen::Matrix<double, Eigen::Dynamic, 1> prec = in__.vector_lb_constrain(0, numCellTypes);
+        size_t prec_j_1_max__ = numCellTypes;
+        for (size_t j_1__ = 0; j_1__ < prec_j_1_max__; ++j_1__) {
+            vars__.push_back(prec(j_1__));
+        }
 
         Eigen::Matrix<double, Eigen::Dynamic, 1> trueProp2 = in__.vector_constrain(n);
         size_t trueProp2_j_1_max__ = n;
@@ -563,40 +512,52 @@ public:
 
         try {
             // declare and define transformed parameters
-            current_statement_begin__ = 47;
-            double sigma1;
-            (void) sigma1;  // dummy to suppress unused var warning
-            stan::math::initialize(sigma1, DUMMY_VAR__);
-            stan::math::fill(sigma1, DUMMY_VAR__);
+            current_statement_begin__ = 55;
+            validate_non_negative_index("sigma", "numCellTypes", numCellTypes);
+            Eigen::Matrix<double, Eigen::Dynamic, 1> sigma(numCellTypes);
+            stan::math::initialize(sigma, DUMMY_VAR__);
+            stan::math::fill(sigma, DUMMY_VAR__);
 
-            current_statement_begin__ = 48;
+            current_statement_begin__ = 56;
             double sigma2;
             (void) sigma2;  // dummy to suppress unused var warning
             stan::math::initialize(sigma2, DUMMY_VAR__);
             stan::math::fill(sigma2, DUMMY_VAR__);
 
-            current_statement_begin__ = 51;
+            current_statement_begin__ = 60;
             double betaNormal;
             (void) betaNormal;  // dummy to suppress unused var warning
             stan::math::initialize(betaNormal, DUMMY_VAR__);
             stan::math::fill(betaNormal, DUMMY_VAR__);
 
             // do transformed parameters statements
-            current_statement_begin__ = 52;
-            stan::math::assign(betaNormal, (beta1 + beta3));
-            current_statement_begin__ = 55;
-            stan::math::assign(sigma1, stan::math::sqrt((1 / prec1)));
-            current_statement_begin__ = 56;
-            stan::math::assign(sigma2, stan::math::sqrt((1 / prec2)));
+            current_statement_begin__ = 61;
+            stan::math::assign(betaNormal, (get_base1(beta, 1, "beta", 1) + get_base1(beta, 3, "beta", 1)));
+            current_statement_begin__ = 65;
+            stan::model::assign(sigma, 
+                        stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
+                        stan::math::sqrt((1 / get_base1(prec, 1, "prec", 1))), 
+                        "assigning variable sigma");
+            current_statement_begin__ = 66;
+            stan::model::assign(sigma, 
+                        stan::model::cons_list(stan::model::index_uni(2), stan::model::nil_index_list()), 
+                        stan::math::sqrt((1 / get_base1(prec, 2, "prec", 1))), 
+                        "assigning variable sigma");
 
             if (!include_gqs__ && !include_tparams__) return;
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
 
+            current_statement_begin__ = 55;
+            check_greater_or_equal(function__, "sigma", sigma, 0);
+
             // write transformed parameters
             if (include_tparams__) {
-                vars__.push_back(sigma1);
+                size_t sigma_j_1_max__ = numCellTypes;
+                for (size_t j_1__ = 0; j_1__ < sigma_j_1_max__; ++j_1__) {
+                    vars__.push_back(sigma(j_1__));
+                }
                 vars__.push_back(sigma2);
                 vars__.push_back(betaNormal);
             }
@@ -638,21 +599,18 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "beta0";
         param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "beta1";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "beta2";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "beta3";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "prec1";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "prec2";
-        param_names__.push_back(param_name_stream__.str());
+        size_t beta_j_1_max__ = numCellTypes;
+        for (size_t j_1__ = 0; j_1__ < beta_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "beta" << '.' << j_1__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        size_t prec_j_1_max__ = numCellTypes;
+        for (size_t j_1__ = 0; j_1__ < prec_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "prec" << '.' << j_1__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
         size_t trueProp2_j_1_max__ = n;
         for (size_t j_1__ = 0; j_1__ < trueProp2_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
@@ -663,9 +621,12 @@ public:
         if (!include_gqs__ && !include_tparams__) return;
 
         if (include_tparams__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "sigma1";
-            param_names__.push_back(param_name_stream__.str());
+            size_t sigma_j_1_max__ = numCellTypes;
+            for (size_t j_1__ = 0; j_1__ < sigma_j_1_max__; ++j_1__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "sigma" << '.' << j_1__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
             param_name_stream__.str(std::string());
             param_name_stream__ << "sigma2";
             param_names__.push_back(param_name_stream__.str());
@@ -685,21 +646,18 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "beta0";
         param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "beta1";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "beta2";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "beta3";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "prec1";
-        param_names__.push_back(param_name_stream__.str());
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "prec2";
-        param_names__.push_back(param_name_stream__.str());
+        size_t beta_j_1_max__ = numCellTypes;
+        for (size_t j_1__ = 0; j_1__ < beta_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "beta" << '.' << j_1__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        size_t prec_j_1_max__ = numCellTypes;
+        for (size_t j_1__ = 0; j_1__ < prec_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "prec" << '.' << j_1__ + 1;
+            param_names__.push_back(param_name_stream__.str());
+        }
         size_t trueProp2_j_1_max__ = n;
         for (size_t j_1__ = 0; j_1__ < trueProp2_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
@@ -710,9 +668,12 @@ public:
         if (!include_gqs__ && !include_tparams__) return;
 
         if (include_tparams__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "sigma1";
-            param_names__.push_back(param_name_stream__.str());
+            size_t sigma_j_1_max__ = numCellTypes;
+            for (size_t j_1__ = 0; j_1__ < sigma_j_1_max__; ++j_1__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "sigma" << '.' << j_1__ + 1;
+                param_names__.push_back(param_name_stream__.str());
+            }
             param_name_stream__.str(std::string());
             param_name_stream__ << "sigma2";
             param_names__.push_back(param_name_stream__.str());

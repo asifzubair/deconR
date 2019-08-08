@@ -22,7 +22,7 @@
 
 #include <stan/model/model_header.hpp>
 
-namespace model_indSigmat_namespace {
+namespace model_indSigmatHyperprior_namespace {
 
 using std::istream;
 using std::string;
@@ -37,13 +37,13 @@ static int current_statement_begin__;
 
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
-    reader.add_event(0, 0, "start", "model_indSigmat");
-    reader.add_event(82, 80, "end", "model_indSigmat");
+    reader.add_event(0, 0, "start", "model_indSigmatHyperprior");
+    reader.add_event(92, 90, "end", "model_indSigmatHyperprior");
     return reader;
 }
 
 #include <stan_meta_header.hpp>
- class model_indSigmat : public prob_grad {
+ class model_indSigmatHyperprior : public prob_grad {
 private:
         int numGenes;
         int numCellTypes;
@@ -51,13 +51,13 @@ private:
         matrix_d sigMat;
         vector_d alpha;
 public:
-    model_indSigmat(stan::io::var_context& context__,
+    model_indSigmatHyperprior(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
         ctor_body(context__, 0, pstream__);
     }
 
-    model_indSigmat(stan::io::var_context& context__,
+    model_indSigmatHyperprior(stan::io::var_context& context__,
         unsigned int random_seed__,
         std::ostream* pstream__ = 0)
         : prob_grad(0) {
@@ -75,7 +75,7 @@ public:
 
         current_statement_begin__ = -1;
 
-        static const char* function__ = "model_indSigmat_namespace::model_indSigmat";
+        static const char* function__ = "model_indSigmatHyperprior_namespace::model_indSigmatHyperprior";
         (void) function__;  // dummy to suppress unused var warning
         size_t pos__;
         (void) pos__;  // dummy to suppress unused var warning
@@ -157,9 +157,11 @@ public:
             current_statement_begin__ = 48;
             validate_non_negative_index("estimatedProportionsVecSimp", "numCellTypes", numCellTypes);
             num_params_r__ += (numCellTypes - 1);
-            current_statement_begin__ = 52;
-            num_params_r__ += 1;
             current_statement_begin__ = 53;
+            num_params_r__ += 1;
+            current_statement_begin__ = 56;
+            num_params_r__ += 1;
+            current_statement_begin__ = 57;
             num_params_r__ += 1;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -168,7 +170,7 @@ public:
         }
     }
 
-    ~model_indSigmat() { }
+    ~model_indSigmatHyperprior() { }
 
 
     void transform_inits(const stan::io::var_context& context__,
@@ -200,7 +202,21 @@ public:
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable estimatedProportionsVecSimp: ") + e.what()), current_statement_begin__, prog_reader__());
         }
 
-        current_statement_begin__ = 52;
+        current_statement_begin__ = 53;
+        if (!(context__.contains_r("nu")))
+            stan::lang::rethrow_located(std::runtime_error(std::string("Variable nu missing")), current_statement_begin__, prog_reader__());
+        vals_r__ = context__.vals_r("nu");
+        pos__ = 0U;
+        context__.validate_dims("parameter initialization", "nu", "double", context__.to_vec());
+        double nu(0);
+        nu = vals_r__[pos__++];
+        try {
+            writer__.scalar_lb_unconstrain(0, nu);
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable nu: ") + e.what()), current_statement_begin__, prog_reader__());
+        }
+
+        current_statement_begin__ = 56;
         if (!(context__.contains_r("sigma")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable sigma missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("sigma");
@@ -214,7 +230,7 @@ public:
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable sigma: ") + e.what()), current_statement_begin__, prog_reader__());
         }
 
-        current_statement_begin__ = 53;
+        current_statement_begin__ = 57;
         if (!(context__.contains_r("beta0")))
             stan::lang::rethrow_located(std::runtime_error(std::string("Variable beta0 missing")), current_statement_begin__, prog_reader__());
         vals_r__ = context__.vals_r("beta0");
@@ -268,7 +284,15 @@ public:
             else
                 estimatedProportionsVecSimp = in__.simplex_constrain(numCellTypes);
 
-            current_statement_begin__ = 52;
+            current_statement_begin__ = 53;
+            local_scalar_t__ nu;
+            (void) nu;  // dummy to suppress unused var warning
+            if (jacobian__)
+                nu = in__.scalar_lb_constrain(0, lp__);
+            else
+                nu = in__.scalar_lb_constrain(0);
+
+            current_statement_begin__ = 56;
             local_scalar_t__ sigma;
             (void) sigma;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -276,7 +300,7 @@ public:
             else
                 sigma = in__.scalar_lb_constrain(0);
 
-            current_statement_begin__ = 53;
+            current_statement_begin__ = 57;
             local_scalar_t__ beta0;
             (void) beta0;  // dummy to suppress unused var warning
             if (jacobian__)
@@ -286,28 +310,30 @@ public:
 
             // model body
 
-            current_statement_begin__ = 59;
-            lp_accum__.add(dirichlet_log<propto__>(estimatedProportionsVecSimp, alpha));
             current_statement_begin__ = 64;
+            lp_accum__.add(dirichlet_log<propto__>(estimatedProportionsVecSimp, alpha));
+            current_statement_begin__ = 69;
+            lp_accum__.add(gamma_log<propto__>(nu, 2, 0.01));
+            current_statement_begin__ = 74;
             for (int geneNum = 1; geneNum <= numGenes; ++geneNum) {
                 {
-                current_statement_begin__ = 66;
+                current_statement_begin__ = 76;
                 local_scalar_t__ mu(DUMMY_VAR__);
                 (void) mu;  // dummy to suppress unused var warning
                 stan::math::initialize(mu, DUMMY_VAR__);
                 stan::math::fill(mu, DUMMY_VAR__);
 
 
-                current_statement_begin__ = 67;
+                current_statement_begin__ = 77;
                 stan::math::assign(mu, 0);
-                current_statement_begin__ = 69;
+                current_statement_begin__ = 79;
                 for (int cellTypeNum = 1; cellTypeNum <= numCellTypes; ++cellTypeNum) {
 
-                    current_statement_begin__ = 71;
+                    current_statement_begin__ = 81;
                     stan::math::assign(mu, (mu + (get_base1(sigMat, geneNum, cellTypeNum, "sigMat", 1) * get_base1(estimatedProportionsVecSimp, cellTypeNum, "estimatedProportionsVecSimp", 1))));
                 }
-                current_statement_begin__ = 77;
-                lp_accum__.add(student_t_log<propto__>(get_base1(exprMixVec, geneNum, "exprMixVec", 1), 4, (beta0 + mu), sigma));
+                current_statement_begin__ = 87;
+                lp_accum__.add(student_t_log<propto__>(get_base1(exprMixVec, geneNum, "exprMixVec", 1), nu, (beta0 + mu), sigma));
                 }
             }
 
@@ -337,6 +363,7 @@ public:
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
         names__.push_back("estimatedProportionsVecSimp");
+        names__.push_back("nu");
         names__.push_back("sigma");
         names__.push_back("beta0");
     }
@@ -347,6 +374,8 @@ public:
         std::vector<size_t> dims__;
         dims__.resize(0);
         dims__.push_back(numCellTypes);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
         dimss__.push_back(dims__);
@@ -366,7 +395,7 @@ public:
 
         vars__.resize(0);
         stan::io::reader<local_scalar_t__> in__(params_r__, params_i__);
-        static const char* function__ = "model_indSigmat_namespace::write_array";
+        static const char* function__ = "model_indSigmatHyperprior_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
 
         // read-transform, write parameters
@@ -375,6 +404,9 @@ public:
         for (size_t j_1__ = 0; j_1__ < estimatedProportionsVecSimp_j_1_max__; ++j_1__) {
             vars__.push_back(estimatedProportionsVecSimp(j_1__));
         }
+
+        double nu = in__.scalar_lb_constrain(0);
+        vars__.push_back(nu);
 
         double sigma = in__.scalar_lb_constrain(0);
         vars__.push_back(sigma);
@@ -420,7 +452,7 @@ public:
     }
 
     static std::string model_name() {
-        return "model_indSigmat";
+        return "model_indSigmatHyperprior";
     }
 
 
@@ -434,6 +466,9 @@ public:
             param_name_stream__ << "estimatedProportionsVecSimp" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "nu";
+        param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "sigma";
         param_names__.push_back(param_name_stream__.str());
@@ -461,6 +496,9 @@ public:
             param_names__.push_back(param_name_stream__.str());
         }
         param_name_stream__.str(std::string());
+        param_name_stream__ << "nu";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
         param_name_stream__ << "sigma";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
@@ -479,7 +517,7 @@ public:
 
 }  // namespace
 
-typedef model_indSigmat_namespace::model_indSigmat stan_model;
+typedef model_indSigmatHyperprior_namespace::model_indSigmatHyperprior stan_model;
 
 
 #endif

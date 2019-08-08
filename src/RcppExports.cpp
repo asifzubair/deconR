@@ -10,11 +10,13 @@ using namespace Rcpp;
 RcppExport SEXP _rcpp_module_boot_stan_fit4errorModel_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4errorModel2cellTypes_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4indSigmat_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4indSigmatHyperprior_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4errorModel_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4errorModel_mod, 0},
     {"_rcpp_module_boot_stan_fit4errorModel2cellTypes_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4errorModel2cellTypes_mod, 0},
     {"_rcpp_module_boot_stan_fit4indSigmat_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4indSigmat_mod, 0},
+    {"_rcpp_module_boot_stan_fit4indSigmatHyperprior_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4indSigmatHyperprior_mod, 0},
     {NULL, NULL, 0}
 };
 

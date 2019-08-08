@@ -48,6 +48,10 @@ parameters
   simplex[numCellTypes] estimatedProportionsVecSimp;
   // Syntax is "simplex[dimensions_of_simplexes] vectorOfSimplexesName[length_of_vector]".
   // vector[numCellTypes] estimatedProportionsVecSimp;
+
+  // I should set this up so its a heirarchical prior, and nu is then estimated from the data (see derivation.pdf)
+  real<lower=0> nu;
+
   // Variance parameters, estimated below.
   real<lower=0> sigma;
   real beta0;
@@ -56,7 +60,13 @@ parameters
 // The model to be estimated.
 model
 {
-  estimatedProportionsVecSimp ~ dirichlet(alpha); // alpha is a vector 1's, meaning this dirichlet represents a uniform prior.
+  // alpha is a vector 1's, meaning this dirichlet represents a uniform prior.
+  estimatedProportionsVecSimp ~ dirichlet(alpha);
+
+  // Note that the gamma distribution is in terms of shape and rate
+  // i.e. y ~ gamma(alpha, beta)
+  // this means that for our case: E(nu) = 2/0.01 = 200 !!
+  nu ~ gamma(2, 0.01);
 
   // NOTE: Is it possible to vectorize some of this code????
 
@@ -74,8 +84,7 @@ model
     // NOTE: I'm guessing this could be alternatively be implemented as a multivariate liklihood (multivariate t-dist?)?
     // i.e. modelling the correlation across samples ... ?
     // Maybe better if certain assumptions are true, could also hurt if assumptions not met.
-    exprMixVec[geneNum] ~ student_t(4, beta0 + mu, sigma); // nu = 4 here.
-    // I should set this up so its a heirarchical prior, and nu is then estimated from the data (see derivation.pdf)
+    exprMixVec[geneNum] ~ student_t(nu, beta0 + mu, sigma);
+
   }
 }
-

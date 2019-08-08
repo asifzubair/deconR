@@ -21,7 +21,7 @@ data{
   vector[n] y;
 
   // the "measured" cell type proportions (i.e. the point estimate of these)
-  // QUESTION: Why the 2?
+  // QUESTION: why the 2?
   vector[n] measProp2;
   // the measurement error for each proportion estimate
   // QUESTION: Again, why the 2?

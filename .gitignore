@@ -71,3 +71,10 @@ vignettes/*.pdf
 *.exe
 *.out
 *.app
+
+####
+inst/doc
+doc
+Meta
+vignettes/.build.timestamp
+vignettes/.gitignore

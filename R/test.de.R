@@ -1,9 +1,10 @@
 #'
 #'
 #'
-#'
+#' @param ... arguments to be passed to `rstan::sampling` (e.g. chains, iter, init, verbose, refresh)
+#' @return
 
-test.de <- function(...){
+test.de <- function(y, genotype, measProp2, priorNormSD, numCellTypes, n, sd2, ...){
 
   ## Stan model, which accounts for differences in variance in underlying cell types,
   # and error associated with proportion estimates.
@@ -18,19 +19,20 @@ test.de <- function(...){
   # (i.e. using "stan()" function causes segmentation faults (known bug))
   # model <- stan_model(file="error_model_2cellTypes.stan", model_name = "error_model_2cellTypes")
 
-  start.time <- Sys.time() # time this
+  # time this
+  start.time <- Sys.time()
   for(i in 1:600)
   {
     print(paste("*********** ITERATION:", i, "*********** "))
     # NOTE: NOT SURE IF TRUE:
     # Note, the "noise" associated with the proportion measurements have not been measured in a reasonable way here,
     # i.e. the values used are just to test the implementation, but aren't relevant values in terms of the actual data.
-    dat <- list( y = highCancerVariance$bulkExpressionSimMat[i,], genotype = genotype,
+    standata <- list( y = highCancerVariance$bulkExpressionSimMat[i,], genotype = genotype,
                  measProp2 = propMatStanEsts[,2], priorNormSD = 100, numCellTypes = ncol(propMatStanEsts),
                  n = ncol(highCancerVariance$bulkExpressionSimMat), sd2 = sd2)
 
     # run model on this data
-    stanModOut <- sampling(object = stanmodels$errorModel2cellTypes, data = data, ...)
+    stanModOut <- sampling(object = stanmodels$errorModel2cellTypes, data = standata, ...)
 
     # Summarize results.
     # There's prob a more efficient way of getting what we want out of this

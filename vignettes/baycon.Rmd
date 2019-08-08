@@ -1,0 +1,127 @@
+---
+title: "Bayesian Deconvolution of bulk RNAseq data"
+author: "asif zubair"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Bayesian Deconvolution of bulk RNAseq data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "##>>", 
+  fig.width = 8,
+  fig.height = 5
+)
+```
+
+
+```{r setup}
+library(deconR)
+```
+
+In this first outline, we will just recapture some of Paul's investigations to see how the `baycon` function is doing. We will be using already generated simulated data (that lives in `data`). 
+
+<!-- TODO: write some description of the simulated data. ask Paul. -->
+
+First, let's see how a simple linear regression captures the proportion estimates.
+
+```{r lm}
+p_propInv <- 1 - p_theProp
+cancerPropEst <- numeric()
+normalPropEst <- numeric()
+estimates <- matrix(rep(0, 2000), 1000, 2)
+
+# QUESTION: Why do we regress these separately ?
+# Why not:
+# estimates <- coef(summary(lm(p_bulkExpressionSimMat ~ p_simSigMatTwo)))
+for(i in 1:1000)
+{
+  # cancer proportion is the regression co-efficient
+  cancerPropEst[i] <- coef(summary(lm(p_bulkExpressionSimMat[, i]~p_cancerSig)))[2, 1] 
+  # normal proportion is also the regression co-efficient
+  normalPropEst[i] <- coef(summary(lm(p_bulkExpressionSimMat[, i]~p_normalSig)))[2, 1] 
+  # estimates[i, c(1,2)] <- coef(summary(lm(p_bulkExpressionSimMat[,i] ~ p_simSigMatTwo)))[2, 1]
+}
+
+# These estimates (from the regression co-efficient) are extremely highly correlated, but they are not accurate, 
+# they are systematically lower than they should be, completely on the wrong scale... (see plots and regression line). 
+# Correlation is a bad measure of agreement here.
+cor(cancerPropEst, p_theProp) # [1] 0.9907122
+cor(normalPropEst, p_propInv) # [1] 0.9906251
+plot(cancerPropEst, p_theProp)
+abline(0,1)
+summary(lm(p_bulkExpressionSimMat[, i]~p_normalSig))
+summary(lm(p_bulkExpressionSimMat[, i]~p_cancerSig+p_normalSig))
+
+# plot(estimates[,1], p_theProp)
+# abline(0,1)
+```
+
+We can do some post-hoc modification of the estimates. A lot of deconvolution programs seem to do this.
+
+```{r lm_mod}
+# Scale the cancer cell estimates from linear regression (a la CIBERSORT), does this help much? (somwewhat better, but still off)
+cancerPropEstScaled <- cancerPropEst - min(cancerPropEst)
+max(cancerPropEstScaled) # [1] 1.783132
+min(cancerPropEstScaled) # [1] 0
+cancerPropEstScaled <- cancerPropEstScaled / max(cancerPropEstScaled)
+cancerPropEstScaled[2] # [1] 0.3562379
+p_theProp[2] # [1] 0.4756
+plot(cancerPropEstScaled, p_theProp)
+abline(0,1)
+```
+
+Now let's see how the stan estimates perform. But, first we need to compute them:
+
+```{r stan, warning=F, message=F}
+out <- baycon(bulkExpression = p_bulkExpressionSimMat, mle = F, 
+              chains = 3, iter = 2000, init = 0, verbose = F, refresh = 0, 
+              control = list(adapt_delta = 0.9))
+```
+
+Let's compare the estimates with actual values:
+
+```{r stan.qc}
+propMat <- out$mean
+
+# The true values are on the same scale as the predicted values, 
+# *the slope is almost exactly 1* (unlike the naive linear regression approach). 
+# Random idea: Mutual information as a measure of agreement?
+summary(lm(propMat[,1] ~ p_theProp))
+
+# Plots look good, data is on the correct scale
+plot(propMat[,1] ~ p_theProp)
+abline(0,1)
+cor(propMat[,1], p_propInv)
+```
+
+
+```{r mle, eval=F, echo=F}
+mvnPropEsts <- out$mvn$mean
+propMatStanEsts <- out$stan$mean
+
+# The stan and MLE point estimates are essentially identical, when the ML estimate actually works.
+cor.test(mvnPropEsts[,1], propMatStanEsts[,1]) # [1] 0.999991
+plot(mvnPropEsts[,2], p_propInv)
+abline(coef = coef(lm(mvnPropEsts[,2] ~ p_propInv)))
+summary(lm(mvnPropEsts[,2] ~ p_propInv))
+```
+
+
+> Lingering QUESTIONs: Are the error estimates actually accurate!!!???? How to test?  
+
+> NB: Do the error estimates increase as genetic interactions increase???????   
+
+> How does this compare to what, for example, CIBERSORT will do?  
+
+> What is the effect of genetic interactions on this....?   
+
+> Does t-dist do better than normal. Does a heirarchical prior on the degrees of freedom of a t-distribution work better?  
+
+> Given ground truth is know, What proportion of the time does 95% of the posterior density contain the true proportion value?   
+
+> 95% of the time?? I.e. are the uncertainty estimates accurate?? Are they accurate when interactions occur.  

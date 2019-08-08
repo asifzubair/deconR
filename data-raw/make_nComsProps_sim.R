@@ -8,10 +8,12 @@ nComsProps_brca <- nComsProps[nComsProps[,2] == "BRCA" & substring(nComsProps[,1
 nComsProps_brca_noNa <- nComsProps_brca[!is.na(nComsProps_brca)]
 
 # Proportions that I will use in subsequent analysis
-p_theProp <- sample(nComsProps_brca_noNa, 1000) # select 1000 samples at random (without replacement).
+# select 1000 samples at random (without replacement).
+p_theProp <- sample(nComsProps_brca_noNa, 1000)
 p_propInv <- (1-p_theProp)
 
-# Create a simulated cancer datasets. 600 genes, 1000 patients, genes expression goes from 1:10 in even steps with gaussian noise.
+# Create a simulated cancer datasets.
+# 600 genes, 1000 patients, genes expression goes from 1:10 in even steps with gaussian noise.
 cancerExpressionMat <- numeric(1000*600)
 dim(cancerExpressionMat) <- c(600, 1000)
 normalExpressionMat  <- numeric(1000*600)
@@ -26,11 +28,13 @@ for(i in 1:1000)
   p_bulkExpressionSimMat[, i] <- (cancerExpressionMat[,i] * p_theProp[i]) + (normalExpressionMat[,i] * p_propInv[i])
 }
 
-cancerSig <- seq(1, 1.599, .001) # the values before noise was added
-cancerPropEst <- seq(1.599, 1, -.001) # values before noise was added
-normalSig <- apply(normalExpressionMat, 1, mean)
-
-p_simSigMatTwo <- cbind(cancerSig, normalSig)
+# the values before noise was added
+p_cancerSig <- seq(1, 1.599, .001)
+# QUESTION: why do we take the mean here ?
+# Did you mean to do this:
+# p_normalSig <- seq(1.599, 1, -.001) ?
+p_normalSig <- apply(normalExpressionMat, 1, mean)
+p_simSigMatTwo <- cbind(p_cancerSig, p_normalSig)
 
 # p_ for paul_
-usethis::use_data(p_simSigMatTwo, p_bulkExpressionSimMat, p_theProp, p_propInv)
+usethis::use_data(p_theProp, p_propInv, p_cancerSig, p_normalSig, p_simSigMatTwo, p_bulkExpressionSimMat, overwrite = T)

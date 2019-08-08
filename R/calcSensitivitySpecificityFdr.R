@@ -30,7 +30,7 @@ calcSensitivitySpecificityFdr <- function(estimatedBetas, pValues, realBetas, fd
   numTrueNegatives <- sum(notSignificant %in% negatives)
   specificity <- numTrueNegatives/numNegatives
 
-  # Calculate the type I error rate, i.e. the type I error rate....!
+  # Calculate the type I error rate ....!
   # i.e. the proportion of things called positive that are actually negative.
   MeasuredFalseDiscoveryRate <- sum(isSignificant %in% negatives) / length(isSignificant)
   FalseDiscoveriesIndex <- isSignificant[isSignificant %in% negatives]

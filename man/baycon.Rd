@@ -26,7 +26,7 @@ baycon(numGenes = nrow(p_bulkExpressionSimMat),
 \item{...}{arguments to be passed to \code{rstan::sampling} (e.g. \code{chains, iter, init, verbose, refresh})}
 }
 \value{
-An object of type vector (list) with posterior mean estimates (and mle mean estimates),
+An object of type vector (list) with posterior mean estimates (and MVN mean estimates),
 alongwith associated error variances
 }
 \description{

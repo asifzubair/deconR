@@ -6,8 +6,9 @@
 \usage{
 baycon(numGenes = nrow(p_bulkExpressionSimMat),
   numCellTypes = ncol(p_simSigMatTwo),
-  bulkExpression = p_bulkExpressionSimMat, sigmat = p_simSigMatTwo,
-  mle = F, ...)
+  bulkExpression = p_bulkExpressionSimMat[, 1:5],
+  sigMat = p_simSigMatTwo, fit.mvn = F, useHyperPrior = F,
+  stanWarningCheck = "none", ...)
 }
 \arguments{
 \item{numGenes}{numeric of number of genes}
@@ -16,14 +17,17 @@ baycon(numGenes = nrow(p_bulkExpressionSimMat),
 
 \item{bulkExpression}{bulk expression matrix}
 
-\item{sigmat}{signature matrix}
+\item{sigMat}{signature matrix}
 
-\item{mle}{a logical indicating whether we need mle or not}
+\item{fit.mvn}{a logical indicating whether we want to fit a MVN to the posterior}
 
-\item{...}{arguments to be passed to \code{rstan::sampling} (e.g. chains, iter, init, verbose, refresh)}
+\item{stanWarningCheck}{level at which Stan warnings must be handled, one of \code{c('none', 'divergent', 'all')}}
+
+\item{...}{arguments to be passed to \code{rstan::sampling} (e.g. \code{chains, iter, init, verbose, refresh})}
 }
 \value{
-An object of type vector (list) with mean estimates from posterior (and mle estimates)
+An object of type vector (list) with posterior mean estimates (and mle mean estimates),
+alongwith associated error variances
 }
 \description{
 Bayesian deconvolution with Stan

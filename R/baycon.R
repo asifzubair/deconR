@@ -52,7 +52,7 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
   }
 
   # save the estimates in a matrix
-  # QUESTION: Are we repeating this ? Commenting below line out for now
+  # QUESTION: Are we repeating this ? Commenting out below line for now
   # propMat <- do.call(rbind, pEstimatesList)
   propMatStanEsts <- do.call(rbind, pEstimatesList)
   stanEsts = list( mean = propMatStanEsts, errors = var)

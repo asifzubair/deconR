@@ -21,7 +21,9 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(deconR)
+options(mc.cores = parallel::detectCores())
 ```
+
 
 In this first outline, we will just recapture some of Paul's investigations to see how the `baycon` function is doing. We will be using already generated simulated data (that lives in `data`). 
 
@@ -61,6 +63,7 @@ summary(lm(p_bulkExpressionSimMat[, i]~p_cancerSig+p_normalSig))
 # abline(0,1)
 ```
 
+
 We can do some post-hoc modification of the estimates. A lot of deconvolution programs seem to do this.
 
 ```{r lm_mod}
@@ -75,18 +78,19 @@ plot(cancerPropEstScaled, p_theProp)
 abline(0,1)
 ```
 
+
 Now let's see how the stan estimates perform. But, first we need to compute them:
 
 ```{r stan, warning=F, message=F}
-out <- baycon(bulkExpression = p_bulkExpressionSimMat, mle = F, 
-              chains = 3, iter = 2000, init = 0, verbose = F, refresh = 0, 
-              control = list(adapt_delta = 0.9))
+out <- baycon(bulkExpression = p_bulkExpressionSimMat, fit.mvn = T, 
+              verbose = F, refresh = 0, control = list(adapt_delta = 0.95))
 ```
+
 
 Let's compare the estimates with actual values:
 
 ```{r stan.qc}
-propMat <- out$mean
+propMat <- out$stan$mean
 
 # The true values are on the same scale as the predicted values, 
 # *the slope is almost exactly 1* (unlike the naive linear regression approach). 
@@ -100,7 +104,37 @@ cor(propMat[,1], p_propInv)
 ```
 
 
-```{r mle, eval=F, echo=F}
+Another idea is to use a hyperprior on the degrees of freedom of the t-distribution. We compute estimates using such an approach and compare it with the true values and the estimates computed previously. 
+
+```{r hyper, warning=F, message=F}
+out2 <- baycon(bulkExpression = p_bulkExpressionSimMat, fit.mvn = T, useHyperPrior = T,
+               verbose = F, refresh = 0, control = list(adapt_delta = 0.95))
+
+propMatHyper <- out2$stan$mean
+
+# The true values are on the same scale as the predicted values, 
+# *the slope is almost exactly 1* (unlike the naive linear regression approach). 
+# Random idea: Mutual information as a measure of agreement?
+summary(lm(propMatHyper[,1] ~ p_theProp))
+
+# Plots look good, data is on the correct scale
+plot(propMat[,1] ~ p_theProp)
+abline(0,1)
+cor(propMat[,1], p_propInv)
+
+# Compare to previous estimates
+summary(lm(propMatHyper[,1] ~ propMat[,1]))
+
+# Plots look good, data is on the correct scale
+plot(propMatHyper[,1] ~ propMat[,1])
+abline(0,1)
+cor(propMatHyper[,1], propMat[,1])
+```
+
+
+Finallly, lets compare the estimates of the MVN fit and Stan fits for the first model: 
+
+```{r mle}
 mvnPropEsts <- out$mvn$mean
 propMatStanEsts <- out$stan$mean
 
@@ -112,7 +146,9 @@ summary(lm(mvnPropEsts[,2] ~ p_propInv))
 ```
 
 
-> Lingering QUESTIONs: Are the error estimates actually accurate!!!???? How to test?  
+## Lingering QUESTIONs
+
+> Are the error estimates actually accurate!!!???? How to test?  
 
 > NB: Do the error estimates increase as genetic interactions increase???????   
 

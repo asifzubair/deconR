@@ -50,7 +50,7 @@ parameters
   // vector[numCellTypes] estimatedProportionsVecSimp;
 
   // I should set this up so its a heirarchical prior, and nu is then estimated from the data (see derivation.pdf)
-  real<lower=0> nu;
+  real<lower=1> nu;
 
   // Variance parameters, estimated below.
   real<lower=0> sigma;

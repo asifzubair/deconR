@@ -19,14 +19,14 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
   var <- list()
   if (fit.mvn) mvnErrorDistList <- list()
 
+  #TODO: ideally, I want to do some diagnostic checks based on Stan warnings.
+  #TODO: will probably write a curried function that does diagnostic checks.
+
   for(i in 1:ncol(bulkExpression)) {
 
     # print(paste("******************************************************* ITERATION: ", i))
     standata <- list(numGenes = numGenes,numCellTypes = numCellTypes,
                      exprMixVec = bulkExpression[, i], sigMat = sigMat)
-
-    #TODO: ideally, I want to do some diagnostic checks based on Stan warnings.
-    #TODO: will probably write a curried function that does diagnostic checks.
 
     if (useHyperPrior) {
       nmfOut <- rstan::sampling(stanmodels$indSigmatHyperprior, data = standata, ...);

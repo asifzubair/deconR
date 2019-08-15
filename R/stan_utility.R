@@ -1,6 +1,7 @@
 # Stan utility functions
 # authored by wold renowned M. Betancourt
 # found this file from this repo: https://github.com/betanalpha/knitr_case_studies
+# these functions have been modified to return the result of the check invisibly
 
 # Check transitions that ended with a divergence
 check_div <- function(fit) {
@@ -13,6 +14,8 @@ check_div <- function(fit) {
                 n, N, 100 * n / N))
   if (n > 0)
     print('  Try running with larger adapt_delta to remove the divergences')
+
+  invisible(n>0)
 }
 
 # Check transitions that ended prematurely due to maximum tree depth limit
@@ -26,6 +29,7 @@ check_treedepth <- function(fit, max_depth = 10) {
                 n, N, max_depth, 100 * n / N))
   if (n > 0)
     print('  Run again with max_depth set to a larger value to avoid saturation')
+  invisible(n > 0)
 }
 
 # Checks the energy Bayesian fraction of missing information (E-BFMI)
@@ -45,6 +49,7 @@ check_energy <- function(fit) {
     print('E-BFMI indicated no pathological behavior')
   else
     print('  E-BFMI below 0.2 indicates you may need to reparameterize your model')
+  invisible(!(no_warning))
 }
 
 # Checks the effective sample size per iteration
@@ -67,6 +72,7 @@ check_n_eff <- function(fit) {
     print('n_eff / iter looks reasonable for all parameters')
   else
     print('  n_eff / iter below 0.001 indicates that the effective sample size has likely been overestimated')
+  invisible(!(no_warning))
 }
 
 # Checks the potential scale reduction factors
@@ -87,6 +93,7 @@ check_rhat <- function(fit) {
     print('Rhat looks reasonable for all parameters')
   else
     print('  Rhat above 1.1 indicates that the chains very likely have not mixed')
+  invisible(!(no_warning))
 }
 
 check_all_diagnostics <- function(fit) {

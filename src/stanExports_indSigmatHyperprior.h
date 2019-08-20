@@ -211,7 +211,7 @@ public:
         double nu(0);
         nu = vals_r__[pos__++];
         try {
-            writer__.scalar_lb_unconstrain(0, nu);
+            writer__.scalar_lb_unconstrain(1, nu);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable nu: ") + e.what()), current_statement_begin__, prog_reader__());
         }
@@ -288,9 +288,9 @@ public:
             local_scalar_t__ nu;
             (void) nu;  // dummy to suppress unused var warning
             if (jacobian__)
-                nu = in__.scalar_lb_constrain(0, lp__);
+                nu = in__.scalar_lb_constrain(1, lp__);
             else
-                nu = in__.scalar_lb_constrain(0);
+                nu = in__.scalar_lb_constrain(1);
 
             current_statement_begin__ = 56;
             local_scalar_t__ sigma;
@@ -405,7 +405,7 @@ public:
             vars__.push_back(estimatedProportionsVecSimp(j_1__));
         }
 
-        double nu = in__.scalar_lb_constrain(0);
+        double nu = in__.scalar_lb_constrain(1);
         vars__.push_back(nu);
 
         double sigma = in__.scalar_lb_constrain(0);

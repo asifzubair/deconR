@@ -15,6 +15,9 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
                    bulkExpression = p_bulkExpressionSimMat[,1:5], sigMat = p_simSigMatTwo,
                    fit.mvn = F, useHyperPrior = F, stanWarningCheck = 'none', ...){
 
+  if (is.numeric(bulkExpression)) bulkExpression <- as.data.frame(bulkExpression)
+  stopifnot(nrow(bulkExpression) == nrow(sigMat))
+
   pEstimatesList <- list()
   var <- list()
   if (fit.mvn) mvnErrorDistList <- list()
@@ -37,7 +40,7 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
 
     # store the purity point estimtes here (we're using the posterior mean. *Would mode be better??? Probably*)
     # QUESTION: do we want to restrict the number of iterations for which mean is computed below ?
-    pEstimatesList[[i]] <- apply(stanSumNmf[,1:numCellTypes], 2, mean)
+    pEstimatesList[[i]] <- apply(stanSumNmf[, 1:numCellTypes], 2, mean)
     # also capture the error estimates with a univariate normal distribution.
     # TODO?: we need to remove the warmup samples before estimating error
     # EDIT: this might be unnecessary as as.data.frame takes care of this

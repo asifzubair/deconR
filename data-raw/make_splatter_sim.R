@@ -3,9 +3,9 @@
 numCellTypes <- 4
 numCells <- 100
 numGenes <- 2001
-bulkSamples <- 100
-scSamples <- 6
-total.samples <- bulkSamples + scSamples
+numBulkSamples <- 100
+numSCsamples <- 6
+total.samples <- numBulkSamples + numSCsamples
 seed = 912345
 
 set.seed(seed)

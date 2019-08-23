@@ -18,5 +18,4 @@ sim2 <- scater::normalize(sim2)
 scater::plotPCA(sim2, colour_by = "Group")
 
 
-
 #usethis::use_data()

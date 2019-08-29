@@ -1,0 +1,115 @@
+---
+title: "Testing the differential expression function for 2 celltypes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Testing the differential expression function for 2 celltypes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+```{r setup}
+library(deconR)
+options(mc.cores = parallel::detectCores())
+```
+
+<!-- add some sort of description of the simulated data -->
+
+```{r simdata}
+# Create a simulated eQTL dataset.
+# Double the "cancer" SD, this will QUADRUPLE the variance (SD^2)
+highCancerVariance <- makeSimDataset(sdCancer = 2, sdNormal = 1) 
+
+numSamps <- 250
+# genotype is always the same
+genotype <- c(rep(0, numSamps), rep(1, (numSamps*2)), rep(2, numSamps)) 
+```
+
+
+## Linear Regression
+
+A first attempt at recovering the effect sizes using linear regression. 
+
+```{r lin.reg}
+# Try to recover "cancer" and "normal" eQTL effects using linear regression.
+cancerEstEffect <- numeric()
+intEff <- numeric()
+normalEstEffect <- numeric()
+normalEstEffectAgain <- numeric()
+cancerPLm <- numeric()
+normalPLm <- numeric()
+for(i in 1:600)
+{
+    # effect sizes
+    cancerEstEffect[i] <- coef(summary(lm(highCancerVariance$bulkExpressionSimMat[i,]~genotype*propMatStanEsts[,2])))[2,1]
+    intEff[i] <- coef(summary(lm(highCancerVariance$bulkExpressionSimMat[i,]~genotype*propMatStanEsts[,2])))[2,4]
+    normalEstEffect[i] <- cancerEstEffect[i] + intEff[i]
+    normalEstEffectAgain[i] <- coef(summary(lm(highCancerVariance$bulkExpressionSimMat[i,]~genotype*propMatStanEsts[,1])))[2,1]
+    
+    # p-values
+    cancerPLm[i] <- coef(summary(lm(highCancerVariance$bulkExpressionSimMat[i,]~genotype*propMatStanEsts[,2])))[2,4]
+    normalPLm[i] <- coef(summary(lm(highCancerVariance$bulkExpressionSimMat[i,]~genotype*propMatStanEsts[,1])))[2,4]
+    
+    # print(i)
+}
+```
+
+Let's see how they do:
+
+```{r lin.reg.out}
+# the recovered values with standard linear regression compared to the "real" values
+# Cancer effects
+cor(highCancerVariance$simulatedEffectSizesCancer, cancerEstEffect) # [1] 0.8462424  
+plot(highCancerVariance$simulatedEffectSizesCancer, cancerEstEffect)
+
+# Normal effects.
+cor(highCancerVariance$simulatedEffectSizesNormal, normalEstEffectAgain) # [1] 0.5975468
+plot(highCancerVariance$simulatedEffectSizesNormal, normalEstEffectAgain)
+```
+
+
+## Using Stan estimates
+
+Let's compute the Stan estimates first using a model with a gamma hypr prior on the degrees of freedom. 
+
+
+```{r baycon}
+out <- baycon(bulkExpression = p_bulkExpressionSimMat, sigMat = p_simSigMatTwo, useHyperPrior = T,
+              verbose = F, refresh = 0, control = list(adapt_delta = 0.95))
+```
+
+Let's compute the effect sizes:
+
+```{r de.test}
+propMatStanEsts <- out$stan$mean
+sd2 <- sapply(out$stan$errors, "[[", 4)
+de.out <- test2.de(y = highCancerVariance$bulkExpressionSimMat, genotype = genotype, 
+                   measProp2 = propMatStanEsts[, 2], sd2 = sd2, priorNormSD = 100, 
+                   numCellTypes = ncol(propMatStanEsts), refresh = 0 , iter = 10000, log = F)
+
+betaCancer <- de.out$betaCancer
+betaNormal <- de.out$betaNormal
+```
+
+Finally, lets see how we do:
+
+```{r qc}
+# correlations of effect sizes against 
+cor(highCancerVariance$simulatedEffectSizesCancer, betaCancer)
+
+# Hmm for reals?? This seems a little too good....
+cor(highCancerVariance$simulatedEffectSizesNormal, betaNormal)
+plot(highCancerVariance$simulatedEffectSizesNormal, betaNormal)
+```
+
+

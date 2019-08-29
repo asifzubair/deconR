@@ -1,10 +1,25 @@
+#' Differential expression testing for two cell types
 #'
+#' This is a refactor of Paul's code.
+#' Limited to two cell types.
+#' NOT to be exported.
 #'
-#'
-#' @param ... arguments to be passed to `rstan::sampling` (e.g. chains, iter, init, verbose, refresh)
+#' @export
+#' @param y bulkExpression as a gene by samples matrix
+#' @param genotype genotype labels for the samples
+#' @param measProp2 estimated proportions of second cell type
+#' @param sd2 standard deviation error of measured proportion
+#' @param priorNormSD dunno what this is
+#' @param numCelltypes number of cell types
+#' @param n number of samples
+#' @param log
+#' @param ... arguments to be passed to `rstan::sampling` (e.g. chains, iter (suggested > 8000), init, verbose, refresh)
 #' @return
 
-test.de <- function(y, genotype, measProp2, priorNormSD, numCellTypes, n, sd2, ...){
+test2.de <- function(y, genotype, measProp2, sd2, priorNormSD = 100, numCellTypes, log = T, ...){
+
+  if (is.vector(y)) y <- t(as.data.frame(y))
+  n <- ncol(y)
 
   ## Stan model, which accounts for differences in variance in underlying cell types,
   # and error associated with proportion estimates.
@@ -20,16 +35,16 @@ test.de <- function(y, genotype, measProp2, priorNormSD, numCellTypes, n, sd2, .
   # model <- stan_model(file="error_model_2cellTypes.stan", model_name = "error_model_2cellTypes")
 
   # time this
-  start.time <- Sys.time()
-  for(i in 1:600)
+  if (log) start.time <- Sys.time()
+  for(i in 1:nrow(y))
   {
-    print(paste("*********** ITERATION:", i, "*********** "))
+    if (log) print(paste("*********** ITERATION:", i, "*********** "))
+
     # NOTE: NOT SURE IF TRUE:
     # Note, the "noise" associated with the proportion measurements have not been measured in a reasonable way here,
     # i.e. the values used are just to test the implementation, but aren't relevant values in terms of the actual data.
-    standata <- list( y = highCancerVariance$bulkExpressionSimMat[i,], genotype = genotype,
-                 measProp2 = propMatStanEsts[,2], priorNormSD = 100, numCellTypes = ncol(propMatStanEsts),
-                 n = ncol(highCancerVariance$bulkExpressionSimMat), sd2 = sd2)
+    standata <- list(y = y[i,], genotype = genotype, measProp2 = measProp2, sd2 = sd2,
+                      priorNormSD = 100, numCellTypes = numCellTypes, n = n)
 
     # run model on this data
     stanModOut <- sampling(object = stanmodels$errorModel2cellTypes, data = standata, ...)
@@ -37,11 +52,11 @@ test.de <- function(y, genotype, measProp2, priorNormSD, numCellTypes, n, sd2, .
     # Summarize results.
     # There's prob a more efficient way of getting what we want out of this
     # TODO: Use rstan::get_posterior_mean function ?
-    sumMcmcList[[i]] <- summary(stanModOut)$summary
+    sumMcmcList[[i]] <- rstan::summary(stanModOut)$summary
 
     # recover the effect sizes for "cancer" and "normal"
-    betaCancer[i] <- sumMcmcList[[i]]["beta1",]
-    betaNormal[i] <- sumMcmcList[[i]]["betaNormal",]
+    betaCancer[i] <- sumMcmcList[[i]]["beta1",1]
+    betaNormal[i] <- sumMcmcList[[i]]["betaNormal",1]
 
     # Calculate some "p-values" (not technically p-values,
     # i.e. approximate the posterior distribution of the eQTL effects using a normal distribution)
@@ -50,7 +65,7 @@ test.de <- function(y, genotype, measProp2, priorNormSD, numCellTypes, n, sd2, .
     # (worth reading, although it mostly turns into a major critique of flat priors):
     # http://www.stat.columbia.edu/~gelman/research/published/pvalues3.pdf
 
-    mcmcDraws <- extract(stanModOut)
+    mcmcDraws <- rstan::extract(stanModOut)
     cancerDraws <- mcmcDraws[["beta1"]]
     normalDraws <- mcmcDraws[["betaNormal"]]
 
@@ -61,10 +76,17 @@ test.de <- function(y, genotype, measProp2, priorNormSD, numCellTypes, n, sd2, .
     normalPUpperTail <- pnorm(0, mean(normalDraws), sd(normalDraws), lower.tail=F) #
     normalPLowerTail <- pnorm(0, mean(normalDraws), sd(normalDraws), lower.tail=T)
     pNormal[i] <- (min(c(normalPUpperTail, normalPLowerTail)) * 2)
-    print(paste("*********** Done with gene:", i, "*********** "))
-  }
-  end.time <- Sys.time()
-  time.taken <- end.time - start.time
-  print(time.taken)
 
-}
+    if (log) print(paste("*********** Done with gene:", i, "*********** "))
+  }
+
+  if (log){
+    end.time <- Sys.time()
+    time.taken <- end.time - start.time
+    print(time.taken)
+  }
+
+  ret_value <- list(stanObj = sumMcmcList, betaCancer = betaCancer, pCancer = pCancer, betaNormal = betaNormal, pNormal = pNormal)
+  return(ret_value)
+
+  }

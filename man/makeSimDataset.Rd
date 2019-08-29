@@ -2,9 +2,10 @@
 % Please edit documentation in R/makeSimDataset.R
 \name{makeSimDataset}
 \alias{makeSimDataset}
-\title{Function to make a simple simulated dataset.}
+\title{Function to make a simple simulated dataset for differential expression testing.}
 \usage{
-makeSimDataset(sdCancer = 1, sdNormal = 1, seed = 12345)
+makeSimDataset(sdCancer = 1, sdNormal = 1, seed = 12345,
+  theProp = p_theProp, propInv = p_propInv)
 }
 \arguments{
 \item{sdCancer}{std dev of cancer sample}
@@ -20,5 +21,7 @@ An object of type list with following names:
 simulatedEffectSizesCancer, simulatedEffectSizesNormal}
 }
 \description{
-Function to make a simple simulated dataset.
+The dataset created has 600 genes x 1000 samples and needs the true proportion values.
+This works for two cell types - cancer and normal.
+NOT to be exported.
 }

@@ -313,7 +313,7 @@ public:
             current_statement_begin__ = 64;
             lp_accum__.add(dirichlet_log<propto__>(estimatedProportionsVecSimp, alpha));
             current_statement_begin__ = 69;
-            lp_accum__.add(gamma_log<propto__>(nu, 2, 0.01));
+            lp_accum__.add(gamma_log<propto__>(nu, 2, 0.1));
             current_statement_begin__ = 74;
             for (int geneNum = 1; geneNum <= numGenes; ++geneNum) {
                 {

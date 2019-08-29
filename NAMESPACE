@@ -2,6 +2,7 @@
 
 export(baycon)
 export(makeSimDataset)
+export(test2.de)
 import(Rcpp)
 import(methods)
 import(rstantools)

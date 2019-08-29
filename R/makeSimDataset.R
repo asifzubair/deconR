@@ -1,4 +1,8 @@
-#' Function to make a simple simulated dataset.
+#' Function to make a simple simulated dataset for differential expression testing.
+#'
+#' The dataset created has 600 genes x 1000 samples and needs the true proportion values.
+#' This works for two cell types - cancer and normal.
+#' NOT to be exported.
 #'
 #' @export
 #' @param sdCancer std dev of cancer sample
@@ -8,7 +12,8 @@
 #' @return \code{cancerExpressionSimMat, normalExpressionSimMat, bulkExpressionSimMat,
 #' simulatedEffectSizesCancer, simulatedEffectSizesNormal}
 
-makeSimDataset <- function(sdCancer = 1, sdNormal = 1, seed = 12345)
+makeSimDataset <- function(sdCancer = 1, sdNormal = 1, seed = 12345,
+                           theProp = p_theProp, propInv = p_propInv)
 {
   # Setting seed before running all of the below will ensure consistent result each time this is run
   set.seed(seed)
@@ -34,16 +39,16 @@ makeSimDataset <- function(sdCancer = 1, sdNormal = 1, seed = 12345)
   {
     # NOTE: rnorm() will add noise and mean of 0 and sd of 1,
     # because the real data were standardized to a mean of 0 and sd of 1.
-    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdCancer),
+    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdCancer),
                                     rep(1 + simulatedEffectSizesCancer[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdCancer),
+                                      rnorm(numSamps, sd = sdCancer),
                                     rep(1 + (simulatedEffectSizesCancer[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdCancer))
-    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdCancer))
+    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdNormal),
                                     rep(1 + simulatedEffectSizesNormal[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdNormal),
                                     rep(1 + (simulatedEffectSizesNormal[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdNormal))
+                                      rnorm(numSamps, sd = sdNormal))
     # Combine the above to create a bulk expression data, assuming gene expression is additive based on the proportions.
     bulkExpressionSimMat[i, ] <- (cancerExpressionSimMat[i,] * theProp) + (normalExpressionSimMat[i,] * propInv)
   }
@@ -53,16 +58,16 @@ makeSimDataset <- function(sdCancer = 1, sdNormal = 1, seed = 12345)
   simulatedEffectSizesNormal[101:200] <- rep(0, 100)
   for(i in 101:200)
   {
-    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdCancer),
+    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdCancer),
                                     rep(1 + simulatedEffectSizesCancer[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdCancer),
+                                      rnorm(numSamps, sd = sdCancer),
                                     rep(1 + (simulatedEffectSizesCancer[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdCancer))
-    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdCancer))
+    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdNormal),
                                     rep(1 + simulatedEffectSizesNormal[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdNormal),
                                     rep(1 + (simulatedEffectSizesNormal[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdNormal))
+                                      rnorm(numSamps, sd = sdNormal))
     # Combine the above to create a bulk expression data, assuming gene expression is additive based on the proportions.
     bulkExpressionSimMat[i, ] <- (cancerExpressionSimMat[i,] * theProp) + (normalExpressionSimMat[i,] * propInv)
   }
@@ -72,16 +77,16 @@ makeSimDataset <- function(sdCancer = 1, sdNormal = 1, seed = 12345)
   simulatedEffectSizesNormal[201:300] <- seq(-.5, 0.49, .01)
   for(i in 201:300)
   {
-    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdCancer),
+    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdCancer),
                                     rep(1 + simulatedEffectSizesCancer[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdCancer),
+                                      rnorm(numSamps, sd = sdCancer),
                                     rep(1 + (simulatedEffectSizesCancer[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdCancer))
-    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdCancer))
+    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdNormal),
                                     rep(1 + simulatedEffectSizesNormal[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdNormal),
                                     rep(1 + (simulatedEffectSizesNormal[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdNormal))
+                                      rnorm(numSamps, sd = sdNormal))
     # Combine the above to create a bulk expression data, assuming gene expression is additive based on the proportions.
     bulkExpressionSimMat[i, ] <- (cancerExpressionSimMat[i,] * theProp) + (normalExpressionSimMat[i,] * propInv)
   }
@@ -91,16 +96,16 @@ makeSimDataset <- function(sdCancer = 1, sdNormal = 1, seed = 12345)
   simulatedEffectSizesNormal[301:400] <- rep(0, 100)
   for(i in 301:400)
   {
-    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdCancer),
+    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdCancer),
                                     rep(1 + simulatedEffectSizesCancer[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdCancer),
+                                      rnorm(numSamps, sd = sdCancer),
                                     rep(1 + (simulatedEffectSizesCancer[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdCancer))
-    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdCancer))
+    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdNormal),
                                     rep(1 + simulatedEffectSizesNormal[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdNormal),
                                     rep(1 + (simulatedEffectSizesNormal[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdNormal))
+                                      rnorm(numSamps, sd = sdNormal))
     # Combine the above to create a bulk expression data, assuming gene expression is additive based on the proportions.
     bulkExpressionSimMat[i, ] <- (cancerExpressionSimMat[i,] * theProp) + (normalExpressionSimMat[i,] * propInv)
   }
@@ -110,16 +115,16 @@ makeSimDataset <- function(sdCancer = 1, sdNormal = 1, seed = 12345)
   simulatedEffectSizesNormal[401:500] <- seq(-.5, 0.49, .01)
   for(i in 401:500)
   {
-    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdCancer),
+    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdCancer),
                                     rep(1 + simulatedEffectSizesCancer[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdCancer),
+                                      rnorm(numSamps, sd = sdCancer),
                                     rep(1 + (simulatedEffectSizesCancer[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdCancer))
-    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdCancer))
+    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdNormal),
                                     rep(1 + simulatedEffectSizesNormal[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdNormal),
                                     rep(1 + (simulatedEffectSizesNormal[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdNormal))
+                                      rnorm(numSamps, sd = sdNormal))
     # Combine the above to create a bulk expression data, assuming gene expression is additive based on the proportions.
     bulkExpressionSimMat[i, ] <- (cancerExpressionSimMat[i,] * theProp) + (normalExpressionSimMat[i,] * propInv)
   }
@@ -133,16 +138,16 @@ makeSimDataset <- function(sdCancer = 1, sdNormal = 1, seed = 12345)
   simulatedEffectSizesNormal[501:600] <- aScaled
   for(i in 501:600)
   {
-    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdCancer),
+    cancerExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdCancer),
                                     rep(1 + simulatedEffectSizesCancer[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdCancer),
+                                      rnorm(numSamps, sd = sdCancer),
                                     rep(1 + (simulatedEffectSizesCancer[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdCancer))
-    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdCancer))
+    normalExpressionSimMat[i,] <- c(rep(1, numSamps) + rnorm(numSamps, sd = sdNormal),
                                     rep(1 + simulatedEffectSizesNormal[i], (numSamps*2)) +
-                                      rnorm(numSamps, sd=sdNormal),
+                                      rnorm(numSamps, sd = sdNormal),
                                     rep(1 + (simulatedEffectSizesNormal[i]*2), numSamps) +
-                                      rnorm(numSamps, sd=sdNormal))
+                                      rnorm(numSamps, sd = sdNormal))
     # Combine the above to create a bulk expression data, assuming gene expression is additive based on the proportions.
     bulkExpressionSimMat[i, ] <- (cancerExpressionSimMat[i,] * theProp) + (normalExpressionSimMat[i,] * propInv)
   }

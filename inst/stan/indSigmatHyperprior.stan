@@ -66,7 +66,7 @@ model
   // Note that the gamma distribution is in terms of shape and rate
   // i.e. y ~ gamma(alpha, beta)
   // this means that for our case: E(nu) = 2/0.01 = 200 !!
-  nu ~ gamma(2, 0.01);
+  nu ~ gamma(2, 0.1);
 
   // NOTE: Is it possible to vectorize some of this code????
 

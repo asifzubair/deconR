@@ -43,9 +43,9 @@ estimates <- matrix(rep(0, 2000), 1000, 2)
 for(i in 1:1000)
 {
   # cancer proportion is the regression co-efficient
-  cancerPropEst[i] <- coef(summary(lm(p_bulkExpressionSimMat[, i]~p_cancerSig)))[2, 1] 
+  cancerPropEst[i] <- coef(summary(lm(p_bulkExpressionSimMat[, i] ~ p_cancerSig)))[2, 1] 
   # normal proportion is also the regression co-efficient
-  normalPropEst[i] <- coef(summary(lm(p_bulkExpressionSimMat[, i]~p_normalSig)))[2, 1] 
+  normalPropEst[i] <- coef(summary(lm(p_bulkExpressionSimMat[, i] ~ p_normalSig)))[2, 1] 
   # estimates[i, c(1,2)] <- coef(summary(lm(p_bulkExpressionSimMat[,i] ~ p_simSigMatTwo)))[2, 1]
 }
 
@@ -56,8 +56,8 @@ cor(cancerPropEst, p_theProp) # [1] 0.9907122
 cor(normalPropEst, p_propInv) # [1] 0.9906251
 plot(cancerPropEst, p_theProp)
 abline(0,1)
-summary(lm(p_bulkExpressionSimMat[, i]~p_normalSig))
-summary(lm(p_bulkExpressionSimMat[, i]~p_cancerSig+p_normalSig))
+summary(lm(p_bulkExpressionSimMat[, i] ~ p_normalSig))
+summary(lm(p_bulkExpressionSimMat[, i] ~ p_cancerSig+p_normalSig))
 
 # plot(estimates[,1], p_theProp)
 # abline(0,1)
@@ -86,7 +86,7 @@ abline(0,1)
 Now let's see how the stan estimates perform. But, first we need to compute them:
 
 ```{r stan, warning=F, message=F}
-out1 <- baycon(bulkExpression = p_bulkExpressionSimMat, fit.mvn = T, 
+out1 <- baycon(bulkExpression = p_bulkExpressionSimMat, sigMat = p_simSigMatTwo, fit.mvn = T, 
               verbose = F, refresh = 0, control = list(adapt_delta = 0.95))
 ```
 
@@ -112,7 +112,7 @@ cor(propMat[,1], p_theProp)
 Another idea is to use a hyperprior on the degrees of freedom of the t-distribution. We compute estimates using such an approach and compare it with the true values and the estimates computed previously. 
 
 ```{r hyper, warning=F, message=F}
-out2 <- baycon(bulkExpression = p_bulkExpressionSimMat, fit.mvn = T, useHyperPrior = T,
+out2 <- baycon(bulkExpression = p_bulkExpressionSimMat, sigMat = p_simSigMatTwo, fit.mvn = F, useHyperPrior = T,
                verbose = F, refresh = 0, control = list(adapt_delta = 0.95))
 
 propMatHyper <- out2$stan$mean

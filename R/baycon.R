@@ -11,12 +11,15 @@
 #' @return An object of type list with posterior mean estimates (and MVN mean estimates),
 #' alongwith associated error variances
 
-baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(p_simSigMatTwo),
-                   bulkExpression = p_bulkExpressionSimMat[,1:5], sigMat = p_simSigMatTwo,
-                   fit.mvn = F, useHyperPrior = F, stanWarningCheck = 'none', ...){
+baycon <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, stanWarningCheck = 'none', ...){
 
+  # TODO: this following sanity check is very basic,
+  # TODO: need to hand situations in which either row or column vectors are passed
   if (is.numeric(bulkExpression)) bulkExpression <- as.data.frame(bulkExpression)
   stopifnot(nrow(bulkExpression) == nrow(sigMat))
+
+  numGenes = nrow(bulkExpression)
+  numCellTypes = ncol(sigMat)
 
   pEstimatesList <- list()
   var <- list()
@@ -28,7 +31,7 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
   for(i in 1:ncol(bulkExpression)) {
 
     # print(paste("******************************************************* ITERATION: ", i))
-    standata <- list(numGenes = numGenes,numCellTypes = numCellTypes,
+    standata <- list(numGenes = numGenes, numCellTypes = numCellTypes,
                      exprMixVec = bulkExpression[, i], sigMat = sigMat)
 
     if (useHyperPrior) {
@@ -40,7 +43,7 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
 
     # store the purity point estimtes here (we're using the posterior mean. *Would mode be better??? Probably*)
     # QUESTION: do we want to restrict the number of iterations for which mean is computed below ?
-    pEstimatesList[[i]] <- apply(stanSumNmf[, 1:numCellTypes], 2, mean)
+    pEstimatesList[[i]] <- colMeans(stanSumNmf[, 1:numCellTypes])
     # also capture the error estimates with a univariate normal distribution.
     # TODO?: we need to remove the warmup samples before estimating error
     # EDIT: this might be unnecessary as as.data.frame takes care of this
@@ -68,9 +71,10 @@ baycon <- function(numGenes = nrow(p_bulkExpressionSimMat), numCellTypes = ncol(
     mvnEsts = list(mean = mvnPropEsts, mvnObj = mvnErrorDistList)
   }
 
-  ret_value <- stanEsts
   if (fit.mvn)
     ret_value <- list(stan = stanEsts, mvn = mvnEsts)
+  else
+    ret_value <- list(stan = stanEsts, mvn = NULL)
 
   return(ret_value)
   }

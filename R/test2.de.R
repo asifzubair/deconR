@@ -4,7 +4,6 @@
 #' Limited to two cell types.
 #' NOT to be exported.
 #'
-#' @export
 #' @param y bulkExpression as a gene by samples matrix
 #' @param genotype genotype labels for the samples
 #' @param measProp2 estimated proportions of second cell type
@@ -16,8 +15,11 @@
 #' @param ... arguments to be passed to `rstan::sampling` (e.g. chains, iter (suggested > 8000), init, verbose, refresh)
 #' @return
 
+
 test2.de <- function(y, genotype, measProp2, sd2, priorNormSD = 100, numCellTypes, log = T, ...){
 
+  # TODO: remove numCellTypes from function signature,
+  # TODO: can compute it from one of the input matrices
   if (is.vector(y)) y <- t(as.data.frame(y))
   n <- ncol(y)
 

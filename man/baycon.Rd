@@ -4,17 +4,10 @@
 \alias{baycon}
 \title{Bayesian deconvolution with Stan}
 \usage{
-baycon(numGenes = nrow(p_bulkExpressionSimMat),
-  numCellTypes = ncol(p_simSigMatTwo),
-  bulkExpression = p_bulkExpressionSimMat[, 1:5],
-  sigMat = p_simSigMatTwo, fit.mvn = F, useHyperPrior = F,
+baycon(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
   stanWarningCheck = "none", ...)
 }
 \arguments{
-\item{numGenes}{numeric of number of genes}
-
-\item{numCellTypes}{numeric of number of cell types}
-
 \item{bulkExpression}{bulk expression matrix}
 
 \item{sigMat}{signature matrix}

@@ -4,7 +4,6 @@
 #' This works for two cell types - cancer and normal.
 #' NOT to be exported.
 #'
-#' @export
 #' @param sdCancer std dev of cancer sample
 #' @param sdNormal std dev of normal sample
 #' @param seed set the seed for the simulation

@@ -28,7 +28,7 @@ options(mc.cores = parallel::detectCores())
 ```{r simdata}
 # Create a simulated eQTL dataset.
 # Double the "cancer" SD, this will QUADRUPLE the variance (SD^2)
-highCancerVariance <- makeSimDataset(sdCancer = 2, sdNormal = 1) 
+highCancerVariance <- deconR:::makeSimDataset(sdCancer = 2, sdNormal = 1) 
 
 numSamps <- 250
 # genotype is always the same
@@ -93,7 +93,7 @@ Let's compute the effect sizes:
 ```{r de.test}
 propMatStanEsts <- out$stan$mean
 sd2 <- sapply(out$stan$errors, "[[", 4)
-de.out <- test2.de(y = highCancerVariance$bulkExpressionSimMat, genotype = genotype, 
+de.out <- deconR:::test2.de(y = highCancerVariance$bulkExpressionSimMat, genotype = genotype, 
                    measProp2 = propMatStanEsts[, 2], sd2 = sd2, priorNormSD = 100, 
                    numCellTypes = ncol(propMatStanEsts), refresh = 0 , iter = 10000, log = F)
 

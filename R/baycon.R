@@ -1,8 +1,6 @@
 #' Bayesian deconvolution with Stan
 #'
 #' @export
-#' @param numGenes numeric of number of genes
-#' @param numCellTypes numeric of number of cell types
 #' @param bulkExpression bulk expression matrix
 #' @param sigMat signature matrix
 #' @param fit.mvn a logical indicating whether we want to fit a MVN to the posterior
@@ -29,16 +27,14 @@ baycon <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, stanW
   #TODO: will probably write a curried function that does diagnostic checks.
 
   for(i in 1:ncol(bulkExpression)) {
-
     # print(paste("******************************************************* ITERATION: ", i))
     standata <- list(numGenes = numGenes, numCellTypes = numCellTypes,
                      exprMixVec = bulkExpression[, i], sigMat = sigMat)
 
-    if (useHyperPrior) {
-      nmfOut <- rstan::sampling(stanmodels$indSigmatHyperprior, data = standata, ...);
-    } else {
-      nmfOut <- rstan::sampling(stanmodels$indSigmat, data = standata, ...);
-    }
+    if (useHyperPrior)
+      nmfOut <- rstan::sampling(stanmodels$indSigmatHyperprior, data = standata, ...)
+    else
+      nmfOut <- rstan::sampling(stanmodels$indSigmat, data = standata, ...)
     stanSumNmf <- as.data.frame(nmfOut)
 
     # store the purity point estimtes here (we're using the posterior mean. *Would mode be better??? Probably*)
@@ -53,7 +49,6 @@ baycon <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, stanW
 
     if (fit.mvn)
       mvnErrorDistList[[i]] <- mclust::mvn("XXX", stanSumNmf[, 1:numCellTypes], warn = T)
-
     # print(paste("******************************************************* Done With Sample: ", i))
   }
 

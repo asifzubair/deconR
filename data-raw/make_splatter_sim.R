@@ -1,9 +1,9 @@
 ## code to prepare `make_splatter_sim` dataset goes here
 
 ## convenience functions
-`%>%` <- dplyr::`%>%`
 addNAs <- function(group, out.props) rep(NA, nrow(group) - sum(out.props))
-addLabels0 <- function(group, out.props, out.sample.names) c(unlist(mapply(rep, times = out.props, x = out.sample.names)), addNAs(group, out.props))
+addLabels0 <- function(group, out.props, out.sample.names) c(unlist(mapply(rep, times = out.props, x = out.sample.names)),
+                                                             addNAs(group, out.props))
 
 ## configs
 ## the offset is used to generate more cells than required,
@@ -11,7 +11,7 @@ addLabels0 <- function(group, out.props, out.sample.names) c(unlist(mapply(rep, 
 ## TODO: setting the seed seems to be problematic
 ## TODO: need to find a way to make this reproducible
 numCellTypes <- 4
-numCells <- 500
+numCells <- 200
 numGenes <- 2000
 numBulkSamples <- 100
 numSCsamples <- 10
@@ -39,7 +39,8 @@ counts.mat <- SingleCellExperiment::counts(splat_sim)
 ## we attach a label signifying to which sample (bulk or single cell) is a particular cell assigned
 ## we use the colData(splat_sim) DataFrame to keep track of the label
 
-out.props <- round(splat_props[,-((total.samples - offset + 1):total.samples)]*numCells)
+remove.offset.samples <- -((total.samples - offset + 1):total.samples)
+out.props <- round(splat_props[, remove.offset.samples]*numCells)
 out.sample.names <- c(paste0("Bulk", seq(numBulkSamples)), paste0("SC", seq(numSCsamples)))
 addLabels <- function(...) addLabels0(out.sample.names = out.sample.names, ...)
 
@@ -55,6 +56,7 @@ fullSet <- do.call(rbind, groupByCellType)
 ## for each bulk sample, cells are collapsed to a single sample
 splat_bulkExpression <- as.data.frame(matrix(rep(0, numGenes*numBulkSamples), nrow = numGenes, ncol = numBulkSamples))
 colnames(splat_bulkExpression) <- paste0("Bulk", seq(numBulkSamples))
+rownames(splat_bulkExpression) <- rownames(counts.mat)
 for (sample in colnames(splat_bulkExpression)){
   cells <- subset(fullSet, label == sample)$Cell
   gene.exp <- counts.mat[,cells]
@@ -64,23 +66,14 @@ for (sample in colnames(splat_bulkExpression)){
 ## for single samples, we collapse the celltypes across samples but retain cellular identity
 splat_sigMat <- as.data.frame(matrix(rep(0, numGenes*numCellTypes), nrow = numGenes, ncol = numCellTypes))
 colnames(splat_sigMat) <- paste0("Group", seq(numCellTypes))
+rownames(splat_sigMat) <- rownames(counts.mat)
 for (group in colnames(splat_sigMat)){
   cells <- subset(fullSet, Group == group & grepl("SC", label))$Cell
   gene.exp <- counts.mat[,cells]
   splat_sigMat[, group] <- rowMeans(gene.exp)
 }
 
-# TODO: I have some testing code here, that needs to be removed.
-t(splat_props[,1:5])
-
-out <- baycon(bulkExpression = splat_bulkExpression, sigMat = splat_sigMat, useHyperPrior = T, refresh = 0, iter = 3000)
-out$stan$mean
-
-# let's also look at how linear regression does
-pEstimate = list()
-for (i in 1:5)
-  pEstimate[[i]] <- coef(summary(lm(splat_bulkExpression[,i] ~ ., data = splat_sigMat)))[2:5,1]
-lmEsts <- do.call(rbind, pEstimate)
-lmEsts
-
-usethis::use_data(splat_sim, splat_props, splat_sigMat, splat_bulkExpression, overwrite = T)
+## save it
+remove.sc.offset.samples <- -((total.samples - numSCsamples - offset + 1):total.samples)
+splat_props <- splat_props[ , remove.sc.offset.samples]
+usethis::use_data(splat_props, splat_sigMat, splat_bulkExpression, overwrite = T)

@@ -76,5 +76,5 @@ vignettes/*.pdf
 inst/doc
 doc
 Meta
-vignettes/.build.timestamp
+*.rda
 vignettes/.gitignore

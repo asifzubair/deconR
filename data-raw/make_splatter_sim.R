@@ -11,7 +11,7 @@ addLabels0 <- function(group, out.props, out.sample.names) c(unlist(mapply(rep, 
 ## TODO: setting the seed seems to be problematic
 ## TODO: need to find a way to make this reproducible
 numCellTypes <- 4
-numCells <- 200
+numCells <- 100
 numGenes <- 2000
 numBulkSamples <- 100
 numSCsamples <- 10
@@ -29,9 +29,13 @@ total.props <- total.props/sum(total.props)
 ## I should have equal proportions in total.props,
 ## especially when I generate a large number of samples.
 splat_sim <- splatter::splatSimulate(group.prob = total.props, method = "group", verbose = F,
-                                nGenes = numGenes, batchCells = numCells*total.samples, seed = seed)
+                                nGenes = numGenes, batchCells = numCells*total.samples, seed = seed,
+                                de.prob = c(0.3, 0.1, 0.2, 0.1),
+                                de.downProb = c(0.1, 0.4, 0.6, 0.5),
+                                de.facLoc = c(0.6, 0.1, 0.1, 0.2),
+                                de.facScale = c(0.1, 0.4, 0.2, 0.5))
 splat_sim <- scater::normalize(splat_sim)
-scater::plotPCA(splat_sim, colour_by = "Group")
+## scater::plotPCA(splat_sim, colour_by = "Group")
 
 colData.mat <- SingleCellExperiment::colData(splat_sim)
 counts.mat <- SingleCellExperiment::counts(splat_sim)
@@ -58,17 +62,17 @@ splat_bulkExpression <- as.data.frame(matrix(rep(0, numGenes*numBulkSamples), nr
 colnames(splat_bulkExpression) <- paste0("Bulk", seq(numBulkSamples))
 rownames(splat_bulkExpression) <- rownames(counts.mat)
 for (sample in colnames(splat_bulkExpression)){
-  cells <- subset(fullSet, label == sample)$Cell
+  cells <- as.character(subset(fullSet, label == sample)$Cell)
   gene.exp <- counts.mat[,cells]
   splat_bulkExpression[,sample] <- rowMeans(gene.exp)
 }
 
-## for single samples, we collapse the celltypes across samples but retain cellular identity
+## for single cell samples, we collapse the celltypes across samples but retain cellular identity
 splat_sigMat <- as.data.frame(matrix(rep(0, numGenes*numCellTypes), nrow = numGenes, ncol = numCellTypes))
 colnames(splat_sigMat) <- paste0("Group", seq(numCellTypes))
 rownames(splat_sigMat) <- rownames(counts.mat)
 for (group in colnames(splat_sigMat)){
-  cells <- subset(fullSet, Group == group & grepl("SC", label))$Cell
+  cells <- as.character(subset(fullSet, Group == group & grepl("SC", label))$Cell)
   gene.exp <- counts.mat[,cells]
   splat_sigMat[, group] <- rowMeans(gene.exp)
 }

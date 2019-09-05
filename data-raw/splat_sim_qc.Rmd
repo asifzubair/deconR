@@ -1,0 +1,39 @@
+---
+title: "QC of splatter simulation data"
+author: "asif zubair"
+date: "9/4/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## QC of `Splatter` simulations
+
+Let's either build a new simulation or load an old one
+
+```{r sim_setup}
+newSim = TRUE
+if (newSim){
+    source("make_splatter_sim.R")
+} else {
+  library(deconR)  
+}
+```
+
+
+Take a look at some data:
+
+```{r peek}
+SingleCellExperiment::rowData(splat_sim)
+head(splat_sigMat)
+```
+
+and some plots:
+
+```{r}
+if (newSim)
+  scater::plotPCA(splat_sim, colour_by = "Group")
+matplot(splat_sigMat, xlab = "Gene", ylab = "Expression")
+```

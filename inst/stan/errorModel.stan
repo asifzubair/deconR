@@ -14,18 +14,16 @@ data{
   // number of cell types
   int<lower=0> numCellTypes;
   // number of observations/samples...
-  int<lower=1> n;
+  int<lower=1> numSamples;
   //int<lower=0, upper=2> genotype[n]; // Genotype
-  vector[n] genotype;
+  vector[numSamples] genotype;
   // the expression data
-  vector[n] y;
+  vector[numSamples] y;
 
   // the "measured" cell type proportions (i.e. the point estimate of these)
-  // QUESTION: why the 2?
-  vector[n] measProp2;
+  vector[numSamples] measProp;
   // the measurement error for each proportion estimate
-  // QUESTION: Again, why the 2?
-  vector[n] sd2;
+  vector[numSamples] sd2;
 }
 
 // The parameters accepted by the model.
@@ -44,7 +42,7 @@ parameters{
   vector<lower=0>[numCellTypes] prec;
 
   // unknown/unmeasured *true* vector of proportions. These unmeasured values are treated as parameters.
-  vector[n] trueProp2;
+  vector[numSamples] trueProp;
 
 }
 
@@ -88,13 +86,13 @@ model{
 
   // MODEL LIKELIHOOD
   // error model. (vectorized)
-  measProp2 ~ normal(trueProp2, sd2);
+  measProp ~ normal(trueProp2, sd2);
 
   // This can't be vectorized because you apparently can't exponentiate a vector (i.e. trueProp^2 breaks vectorization).
   // Would it be possible to code this such that "trueProp" is just written as a massive series of strings?
   // Maybe there's a way around this.
   // NOTE: write this for arbitrary numbers of cell types and probably swap precicion for variance (see PDF).
-  for(i in 1:n)
+  for(i in 1:numSamples)
   {
     y[i] ~ normal(beta0 + beta[1]*genotype[i] + beta[2]*trueProp2[i] + beta[3]*(trueProp2[i]*genotype[i]),
     sqrt(((1-2*trueProp2[i]+trueProp2[i]^2)/prec[1]) + (trueProp2[i]^2/prec[2]))

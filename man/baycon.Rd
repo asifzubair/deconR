@@ -5,7 +5,7 @@
 \title{Bayesian deconvolution with Stan}
 \usage{
 baycon(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
-  stanWarningCheck = "none", ...)
+  useOptim = F, useADVI = F, stanWarningCheck = "none", ...)
 }
 \arguments{
 \item{bulkExpression}{bulk expression matrix}
@@ -13,6 +13,12 @@ baycon(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
 \item{sigMat}{signature matrix}
 
 \item{fit.mvn}{a logical indicating whether we want to fit a MVN to the posterior}
+
+\item{useHyperPrior}{use a deconvolution model with hyper prior on the degrees of freedom}
+
+\item{useOptim}{use the L-BFGS optimizer to determine posterior mode}
+
+\item{useADVI}{use the variational bayes approach to estimate posterior mean and variances}
 
 \item{stanWarningCheck}{level at which Stan warnings must be handled, one of \code{c('none', 'divergent', 'all')}}
 

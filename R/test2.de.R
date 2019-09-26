@@ -11,12 +11,13 @@
 #' @param priorNormSD dunno what this is
 #' @param numCelltypes number of cell types
 #' @param n number of samples
-#' @param log
+#' @param log log progress
+#' @param useHierarchichalModel use a hierarchical model instead
 #' @param ... arguments to be passed to `rstan::sampling` (e.g. chains, iter (suggested > 8000), init, verbose, refresh)
-#' @return
+#' @return list containing eQTL effect sizes for cancer and normal cell types
 
 
-test2.de <- function(y, genotype, measProp2, sd2, priorNormSD = 100, numCellTypes, log = T, ...){
+test2.de <- function(y, genotype, measProp2, sd2, priorNormSD = 100, numCellTypes, log = T, useHierarchichalModel = F, ...){
 
   # TODO: remove numCellTypes from function signature,
   # TODO: can compute it from one of the input matrices
@@ -49,7 +50,13 @@ test2.de <- function(y, genotype, measProp2, sd2, priorNormSD = 100, numCellType
                       priorNormSD = 100, numCellTypes = numCellTypes, n = n)
 
     # run model on this data
-    stanModOut <- sampling(object = stanmodels$errorModel2cellTypes, data = standata, ...)
+    if (useHierarchichalModel){
+      message("using hierarchical model")
+      stanModOut <- sampling(object = stanmodels$errorModel2cellTypesHeirar, data = standata, ...)
+    } else {
+      message("using measurement error model")
+      stanModOut <- sampling(object = stanmodels$errorModel2cellTypes, data = standata, ...)
+    }
 
     # Summarize results.
     # There's prob a more efficient way of getting what we want out of this

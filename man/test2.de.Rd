@@ -5,7 +5,7 @@
 \title{Differential expression testing for two cell types}
 \usage{
 test2.de(y, genotype, measProp2, sd2, priorNormSD = 100, numCellTypes,
-  log = T, ...)
+  log = T, useHierarchichalModel = F, ...)
 }
 \arguments{
 \item{y}{bulkExpression as a gene by samples matrix}
@@ -17,6 +17,10 @@ test2.de(y, genotype, measProp2, sd2, priorNormSD = 100, numCellTypes,
 \item{sd2}{standard deviation error of measured proportion}
 
 \item{priorNormSD}{dunno what this is}
+
+\item{log}{log progress}
+
+\item{useHierarchichalModel}{use a hierarchical model instead}
 
 \item{...}{arguments to be passed to `rstan::sampling` (e.g. chains, iter (suggested > 8000), init, verbose, refresh)}
 

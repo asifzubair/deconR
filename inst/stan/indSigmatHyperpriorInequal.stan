@@ -65,6 +65,12 @@ parameters
   real beta0;
 }
 
+// If you put priors on things declared in the parameters block, 
+// then you never need a Jacobian adjustment. 
+// If you put priors on things not declared in the parameters block, 
+// then you need a Jacobian adjustment unless the Jacobian matrix is a constant 
+// with respect to the things declared in the parameters block.
+
 transformed parameters{
   vector[numCellTypes] estimatedProportionsVecSimp = sum_props*estimatedProportionsVecSimp_unscaled;
 }

@@ -28,6 +28,9 @@ test2.de(y, genotype, measProp2, sd2, priorNormSD = 100, numCellTypes,
 
 \item{n}{number of samples}
 }
+\value{
+list containing eQTL effect sizes for cancer and normal cell types
+}
 \description{
 This is a refactor of Paul's code.
 Limited to two cell types.

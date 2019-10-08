@@ -62,3 +62,6 @@ dgt <- function(x, df = 1, mu = 0, sigma = 1){
 
   return(out)
 }
+
+
+

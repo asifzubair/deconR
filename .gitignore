@@ -78,3 +78,5 @@ doc
 Meta
 *.rda
 vignettes/.gitignore
+splat_sim_qc.md
+splat_sim_qc_files

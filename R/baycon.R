@@ -11,7 +11,6 @@
 #' @param ... arguments to be passed to \code{rstan::sampling} (e.g. \code{chains, iter, init, verbose, refresh})
 #' @return An object of type list with posterior mean estimates (and MVN mean estimates),
 #' alongwith associated error variances
-
 baycon <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, useOptim = F, useADVI = F, stanWarningCheck = 'none', ...){
 
   # TODO: this following sanity check is very basic,
@@ -19,6 +18,8 @@ baycon <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, useOp
   if (is.numeric(bulkExpression)) bulkExpression <- as.data.frame(bulkExpression)
   if (any(useOptim, useADVI)) fit.mvn = FALSE
   stopifnot(nrow(bulkExpression) == nrow(sigMat))
+  if (foreach::getDoParWorkers() == 1)
+    message("parallel mode disabled")
 
   numGenes = nrow(bulkExpression)
   numCellTypes = ncol(sigMat)
@@ -30,15 +31,15 @@ baycon <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, useOp
   #TODO: ideally, I want to do some diagnostic checks based on Stan warnings.
   #TODO: will probably write a curried function that does diagnostic checks.
 
+  if (useHyperPrior)
+    model = stanmodels$indSigmatHyperprior
+  else
+    model = stanmodels$indSigmat
+
   for(i in 1:ncol(bulkExpression)) {
     # print(paste("******************************************************* ITERATION: ", i))
     standata <- list(numGenes = numGenes, numCellTypes = numCellTypes,
                      exprMixVec = bulkExpression[, i], sigMat = sigMat)
-
-    if (useHyperPrior)
-      model = stanmodels$indSigmatHyperprior
-    else
-      model = stanmodels$indSigmat
 
     if (useOptim)
       nmfOut <- rstan::optimizing(model, data = standata, draws = 1000, ...)

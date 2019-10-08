@@ -11,6 +11,8 @@
 #' @import rstantools
 #' @importFrom rstan sampling
 #' @importFrom mclust mvnXXX
+#' @importFrom foreach %do%
+#' @importFrom foreach %dopar%
 #'
 #' @references
 #' Stan Development Team (2019). RStan: the R interface to Stan. R package version 2.19.2. https://mc-stan.org

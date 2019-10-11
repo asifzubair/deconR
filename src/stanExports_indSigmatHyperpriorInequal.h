@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_indSigmatHyperpriorInequal");
-    reader.add_event(105, 103, "end", "model_indSigmatHyperpriorInequal");
+    reader.add_event(111, 109, "end", "model_indSigmatHyperpriorInequal");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -290,7 +290,7 @@ public:
             else
                 beta0 = in__.scalar_constrain();
             // transformed parameters
-            current_statement_begin__ = 69;
+            current_statement_begin__ = 75;
             validate_non_negative_index("estimatedProportionsVecSimp", "numCellTypes", numCellTypes);
             Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> estimatedProportionsVecSimp(numCellTypes);
             stan::math::initialize(estimatedProportionsVecSimp, DUMMY_VAR__);
@@ -299,7 +299,7 @@ public:
             // validate transformed parameters
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
-            current_statement_begin__ = 69;
+            current_statement_begin__ = 75;
             size_t estimatedProportionsVecSimp_j_1_max__ = numCellTypes;
             for (size_t j_1__ = 0; j_1__ < estimatedProportionsVecSimp_j_1_max__; ++j_1__) {
                 if (stan::math::is_uninitialized(estimatedProportionsVecSimp(j_1__))) {
@@ -309,26 +309,26 @@ public:
                 }
             }
             // model body
-            current_statement_begin__ = 77;
+            current_statement_begin__ = 83;
             lp_accum__.add(dirichlet_log<propto__>(estimatedProportionsVecSimp, alpha));
-            current_statement_begin__ = 82;
+            current_statement_begin__ = 88;
             lp_accum__.add(gamma_log<propto__>(nu, 2, 0.1));
-            current_statement_begin__ = 87;
+            current_statement_begin__ = 93;
             for (int geneNum = 1; geneNum <= numGenes; ++geneNum) {
                 {
-                current_statement_begin__ = 89;
+                current_statement_begin__ = 95;
                 local_scalar_t__ mu(DUMMY_VAR__);
                 (void) mu;  // dummy to suppress unused var warning
                 stan::math::initialize(mu, DUMMY_VAR__);
                 stan::math::fill(mu, DUMMY_VAR__);
-                current_statement_begin__ = 90;
+                current_statement_begin__ = 96;
                 stan::math::assign(mu, 0);
-                current_statement_begin__ = 92;
+                current_statement_begin__ = 98;
                 for (int cellTypeNum = 1; cellTypeNum <= numCellTypes; ++cellTypeNum) {
-                    current_statement_begin__ = 94;
+                    current_statement_begin__ = 100;
                     stan::math::assign(mu, (mu + (get_base1(sigMat, geneNum, cellTypeNum, "sigMat", 1) * get_base1(estimatedProportionsVecSimp, cellTypeNum, "estimatedProportionsVecSimp", 1))));
                 }
-                current_statement_begin__ = 100;
+                current_statement_begin__ = 106;
                 lp_accum__.add(student_t_log<propto__>(get_base1(exprMixVec, geneNum, "exprMixVec", 1), nu, (beta0 + mu), sigma));
                 }
             }
@@ -412,7 +412,7 @@ public:
         if (!include_tparams__ && !include_gqs__) return;
         try {
             // declare and define transformed parameters
-            current_statement_begin__ = 69;
+            current_statement_begin__ = 75;
             validate_non_negative_index("estimatedProportionsVecSimp", "numCellTypes", numCellTypes);
             Eigen::Matrix<double, Eigen::Dynamic, 1> estimatedProportionsVecSimp(numCellTypes);
             stan::math::initialize(estimatedProportionsVecSimp, DUMMY_VAR__);

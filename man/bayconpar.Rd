@@ -21,8 +21,6 @@ bayconpar(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
 \item{useADVI}{use the variational bayes approach to estimate posterior mean and variances}
 
 \item{...}{arguments to be passed to \code{rstan::sampling} (e.g. \code{chains, iter, init, verbose, refresh})}
-
-\item{stanWarningCheck}{level at which Stan warnings must be handled, one of \code{c('none', 'divergent', 'all')}}
 }
 \value{
 An object of type list with posterior mean estimates (and MVN mean estimates),

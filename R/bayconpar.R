@@ -17,7 +17,7 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, us
   stopifnot(nrow(bulkExpression) == nrow(sigMat))
   if (foreach::getDoParWorkers() == 1)
     message("parallel mode disabled")
-  ars = list(...)
+  args = list(...)
 
   numGenes = nrow(bulkExpression)
   numCellTypes = ncol(sigMat)

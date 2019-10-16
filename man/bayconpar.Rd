@@ -5,7 +5,7 @@
 \title{Bayesian deconvolution with Stan in parallel}
 \usage{
 bayconpar(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
-  useOptim = F, useADVI = F, retfunc = bayconResultClass, ...)
+  useOptim = F, useADVI = F, ...)
 }
 \arguments{
 \item{bulkExpression}{bulk expression matrix}

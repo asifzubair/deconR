@@ -4,8 +4,8 @@
 \alias{bayconResultClass}
 \title{Multi-result class for baycon}
 \usage{
-bayconResultClass(pEstimatesList = NULL, var = NULL,
-  mvnErrorDistList = NULL)
+bayconResultClass(pEstimatesList = NULL, pEstimatesListMedian = NULL,
+  pEstimatesListMode = NULL, var = NULL, mvnErrorDistList = NULL)
 }
 \arguments{
 \item{pEstimatesList}{mean estimates from Stan}

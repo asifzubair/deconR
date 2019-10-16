@@ -10,13 +10,12 @@
 #' @param ... arguments to be passed to \code{rstan::sampling} (e.g. \code{chains, iter, init, verbose, refresh})
 #' @return An object of type list with posterior mean estimates (and MVN mean estimates),
 #' alongwith associated error variances
-bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, useOptim = F, useADVI = F, retfunc = bayconResultClass, ...){
+bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
+                      useOptim = F, useADVI = F, ...){
 
   if (is.numeric(bulkExpression)) bulkExpression <- as.data.frame(bulkExpression)
   if (any(useOptim, useADVI)) fit.mvn = FALSE
   stopifnot(nrow(bulkExpression) == nrow(sigMat))
-  if (foreach::getDoParWorkers() == 1)
-    message("parallel mode disabled")
   args = list(...)
 
   numGenes = nrow(bulkExpression)
@@ -26,18 +25,22 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, us
   var <- list()
   if (fit.mvn) mvnErrorDistList <- list()
 
-  # message("parallel execution would follow metrics:",
-  #        "\nName --> ", foreach::getDoParName(),
-  #        "\nVersion --> ", foreach::getDoParVersion(),
-  #        "\nWorkers --> ", foreach::getDoParWorkers(), "\n")
+  if(foreach::getDoParRegistered())
+    message("parallel execution would follow metrics:",
+          "\nName --> ", foreach::getDoParName(),
+          "\nVersion --> ", foreach::getDoParVersion(),
+          "\nWorkers --> ", foreach::getDoParWorkers(), "\n")
+  else
+    message("No parallel backend detected")
 
   if (useHyperPrior)
     model = stanmodels$indSigmatHyperprior
   else
     model = stanmodels$indSigmat
 
-  parout <- foreach::foreach(i = 1:ncol(bulkExpression), .packages = "rstan") %dopar% {
-    results <- retfunc()
+  parout <- foreach::foreach(i = 1:ncol(bulkExpression), .packages = "rstan",
+                             .export = c("estimate_mode", "bayconResultClass")) %dopar% {
+    results <- bayconResultClass()
     standata <- list(numGenes = numGenes, numCellTypes = numCellTypes,
                      exprMixVec = bulkExpression[, i], sigMat = sigMat)
 
@@ -46,11 +49,13 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, us
     else if (useADVI)
       nmfOut <- do.call(vb, c(list(object = model, data = standata, importance_resampling = T), args))
     else
-      nmfOut <- do.call(sampling, c(list(object = model, data = standata), args))
+      nmfOut <- do.call(sampling, c(list(object = model, data = standata, cores = getOption("mc.cores", 4L)), args))
 
     if (!(useOptim)){
       stanSumNmf <- as.data.frame(nmfOut)
       results$pEstimatesList <- colMeans(stanSumNmf[, 1:numCellTypes])
+      results$pEstimatesListMedian <- apply(stanSumNmf[, 1:numCellTypes], 2, median)
+      results$pEstimatesListMode <- apply(stanSumNmf[, 1:numCellTypes], 2, estimate_mode)
       results$var <- var(stanSumNmf[, 1:numCellTypes])
     } else {
       results$pEstimatesList <- nmfOut$par[1:numCellTypes]
@@ -63,11 +68,20 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, us
   }
 
   propMatStanEsts <- t(sapply(parout, "[[", "pEstimatesList"))
+  if(!(useOptim)) {
+    propMatStanEstsMedian <- t(sapply(parout, "[[", "pEstimatesListMedian"))
+    propMatStanEstsMode <- t(sapply(parout, "[[", "pEstimatesListMode"))
+  }
   var <- sapply(parout, "[[", "var", simplify = F)
   mvnErrorDistList <- sapply(parout, "[[", "mvnErrorDistList", simplify = F)
 
   # propMatStanEsts <- do.call(rbind, pEstimatesList)
-  stanEsts = list(mean = propMatStanEsts, errors = var)
+  if (!(useOptim))
+    stanEsts = list(mean = propMatStanEsts, median = propMatStanEstsMedian,
+                  mode = propMatStanEstsMode, errors = var)
+  else
+    stanEsts = list(mean = propMatStanEsts, median = NULL,
+                    mode = NULL, errors = var)
 
   if (fit.mvn){
     mvnPropEsts <- do.call(cbind,
@@ -93,10 +107,13 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F, us
 #' @param pEstimatesList mean estimates from Stan
 #' @param var variance estimates from Stan
 #' @param mvnErrorDistList MVN approx to posterior
-bayconResultClass <- function(pEstimatesList = NULL, var = NULL, mvnErrorDistList = NULL)
+bayconResultClass <- function(pEstimatesList = NULL, pEstimatesListMedian = NULL,
+                              pEstimatesListMode = NULL, var = NULL, mvnErrorDistList = NULL)
 {
   me <- list(
     pEstimatesList = pEstimatesList,
+    pEstimatesListMedian = pEstimatesListMedian,
+    pEstimatesListMode = pEstimatesListMode,
     var = var,
     mvnErrorDistList = mvnErrorDistList
   )

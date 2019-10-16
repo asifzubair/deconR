@@ -65,3 +65,19 @@ dgt <- function(x, df = 1, mu = 0, sigma = 1){
 
 
 
+#' Estimate the mode of the univarite distribution
+#'
+#' Surprisingly, R does not have a mode function,
+#' well it does but it doesn't do what you think it does.
+#' This implmentation was suggested in the SO answer here:
+#' https://stackoverflow.com/a/13874750/2868715
+#'
+#' @param x vector of values
+#' @return the mode of x
+
+estimate_mode <- function(x) {
+  d <- density(x)
+  d$x[which.max(d$y)]
+}
+
+

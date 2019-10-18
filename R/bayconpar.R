@@ -7,16 +7,21 @@
 #' @param useHyperPrior use a deconvolution model with hyper prior on the degrees of freedom
 #' @param useOptim use the L-BFGS optimizer to determine posterior mode
 #' @param useADVI use the variational bayes approach to estimate posterior mean and variances
+#' @param dump.dir optionally dump sampling files
 #' @param ... arguments to be passed to \code{rstan::sampling} (e.g. \code{chains, iter, init, verbose, refresh})
 #' @return An object of type list with posterior mean estimates (and MVN mean estimates),
 #' alongwith associated error variances
 bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
-                      useOptim = F, useADVI = F, ...){
+                      useOptim = F, useADVI = F, dump.dir = NULL, ...){
 
   if (is.numeric(bulkExpression)) bulkExpression <- as.data.frame(bulkExpression)
   if (any(useOptim, useADVI)) fit.mvn = FALSE
   stopifnot(nrow(bulkExpression) == nrow(sigMat))
-  args = list(...)
+
+  args0 = list(...)
+  if (!is.null(dump.dir))
+    if(!dir.exists(dump.dir))
+      dir.create(dump.dir)
 
   numGenes = nrow(bulkExpression)
   numCellTypes = ncol(sigMat)
@@ -44,12 +49,23 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
     standata <- list(numGenes = numGenes, numCellTypes = numCellTypes,
                      exprMixVec = bulkExpression[, i], sigMat = sigMat)
 
+    ## optionally dump sampler files
+    ## this will create a folder for each bulk sample
+    args = args0
+    if (!is.null(dump.dir)){
+      sampler_dir = file.path(dump.dir, paste0("sample-", i))
+      dir.create(sampler_dir)
+      sample_file = file.path(sampler_dir, "samples")
+      diagnostic_file = file.path(sampler_dir, "diagnostics")
+      args = c(args0, list(sample_file = sample_file, diagnostic_file = diagnostic_file))
+    }
+
     if (useOptim)
       nmfOut <- do.call(optimizing, c(list(object = model, data = standata, draws = 1000), args))
     else if (useADVI)
       nmfOut <- do.call(vb, c(list(object = model, data = standata, importance_resampling = T), args))
     else
-      nmfOut <- do.call(sampling, c(list(object = model, data = standata, cores = getOption("mc.cores", 4L)), args))
+      nmfOut <- do.call(sampling, c(list(object = model, data = standata, cores = getOption("mc.cores", 1L)), args))
 
     if (!(useOptim)){
       stanSumNmf <- as.data.frame(nmfOut)

@@ -15,14 +15,17 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
                       useOptim = F, useADVI = F, dump.dir = NULL, ...){
 
   if (is.numeric(bulkExpression)) bulkExpression <- as.data.frame(bulkExpression)
-  if (any(useOptim, useADVI)) fit.mvn = FALSE
+  if (any(useOptim, useADVI)) fit.mvn = FALSE  
+  if (all(useOptim, useADVI)) stop("Choose one of optimizing, variational or sampling method")
   stopifnot(nrow(bulkExpression) == nrow(sigMat))
 
   args0 = list(...)
   if (!is.null(dump.dir))
     if(!dir.exists(dump.dir))
       dir.create(dump.dir)
-
+  args0$sample_file <- NULL
+  args0$diagnostic_file <- NULL
+  
   numGenes = nrow(bulkExpression)
   numCellTypes = ncol(sigMat)
 
@@ -52,7 +55,7 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
     ## optionally dump sampler files
     ## this will create a folder for each bulk sample
     args = args0
-    if (!is.null(dump.dir)){
+    if (all(!is.null(dump.dir), !(useOptim), !(useADVI))){
       sampler_dir = file.path(dump.dir, paste0("sample-", i))
       dir.create(sampler_dir)
       sample_file = file.path(sampler_dir, "samples")
@@ -66,6 +69,9 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
       nmfOut <- do.call(vb, c(list(object = model, data = standata, importance_resampling = T), args))
     else
       nmfOut <- do.call(sampling, c(list(object = model, data = standata, cores = getOption("mc.cores", 1L)), args))
+    
+    if (!is.null(dump.dir))
+      saveRDS(nmfOut, file = file.path(sampler_dir, "nmfOut.rds"))
 
     if (!(useOptim)){
       stanSumNmf <- as.data.frame(nmfOut)

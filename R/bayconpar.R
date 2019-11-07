@@ -11,7 +11,8 @@
 #' @param ... arguments to be passed to \code{rstan::sampling} (e.g. \code{chains, iter, init, verbose, refresh})
 #' @return An object of type list with posterior mean estimates (and MVN mean estimates),
 #' alongwith associated error variances
-bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
+bayconpar <- function(bulkExpression, sigMat, fit.mvn = F,
+                      useHyperPrior = F, useUnconstrained = F, useInequality = F,
                       useOptim = F, useADVI = F, dump.dir = NULL, ...){
 
   if (is.numeric(bulkExpression)) bulkExpression <- as.data.frame(bulkExpression)
@@ -38,10 +39,14 @@ bayconpar <- function(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
   else
     message("No parallel backend detected")
 
-  if (useHyperPrior)
-    model = stanmodels$indSigmatHyperprior
-  else
+  if (!useHyperPrior)
     model = stanmodels$indSigmat
+  else if (useUnconstrained)
+    model = stanmodels$indSigmatHyperpriorUnconstrained
+  else if (useInequality)
+    model = stanmodels$indSigmatHyperpriorInequal
+  else
+    model = stanmodels$indSigmatHyperprior
 
   parout <- foreach::foreach(i = 1:ncol(bulkExpression), .packages = "rstan",
                              .export = c("estimate_mode", "bayconResultClass")) %dopar% {

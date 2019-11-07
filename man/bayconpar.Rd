@@ -5,7 +5,7 @@
 \title{Bayesian deconvolution with Stan in parallel}
 \usage{
 bayconpar(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
-  useOptim = F, useADVI = F, ...)
+  useOptim = F, useADVI = F, dump.dir = NULL, ...)
 }
 \arguments{
 \item{bulkExpression}{bulk expression matrix}
@@ -19,6 +19,8 @@ bayconpar(bulkExpression, sigMat, fit.mvn = F, useHyperPrior = F,
 \item{useOptim}{use the L-BFGS optimizer to determine posterior mode}
 
 \item{useADVI}{use the variational bayes approach to estimate posterior mean and variances}
+
+\item{dump.dir}{optionally dump sampling files}
 
 \item{...}{arguments to be passed to \code{rstan::sampling} (e.g. \code{chains, iter, init, verbose, refresh})}
 }

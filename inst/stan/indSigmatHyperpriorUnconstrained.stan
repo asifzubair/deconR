@@ -9,13 +9,6 @@
 //    https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started
 //
 
-
-// Following the logic from here:
-// https://discourse.mc-stan.org/t/how-to-add-inequality-constraint-on-sum-of-parameters/1414
-// and here:
-// https://discourse.mc-stan.org/t/how-to-add-inequality-constraint-on-the-model/4835/2
-// which basically recommends to downscale a simplex
-
 // The input data
 data
 {
@@ -51,9 +44,8 @@ transformed data
 // The parameters accepted by the model.
 parameters
 {
-  real<lower=0, upper=1> sum_props;
   // Syntax is "simplex[dimensions_of_simplexes] vectorOfSimplexesName[length_of_vector]".
-  simplex[numCellTypes] estimatedProportionsVecSimp_unscaled;
+  vector<lower=0, upper=1>[numCellTypes] estimatedProportionsVecSimp;
   // Syntax is "simplex[dimensions_of_simplexes] vectorOfSimplexesName[length_of_vector]".
   // vector[numCellTypes] estimatedProportionsVecSimp;
 
@@ -65,26 +57,15 @@ parameters
   real beta0;
 }
 
-// If you put priors on things declared in the parameters block,
-// then you never need a Jacobian adjustment.
-// If you put priors on things not declared in the parameters block,
-// then you need a Jacobian adjustment unless the Jacobian matrix is a constant
-// with respect to the things declared in the parameters block.
-
-transformed parameters{
-  vector[numCellTypes] estimatedProportionsVecSimp = sum_props*estimatedProportionsVecSimp_unscaled;
-}
-
-
 // The model to be estimated.
 model
 {
   // alpha is a vector 1's, meaning this dirichlet represents a uniform prior.
-  estimatedProportionsVecSimp_unscaled ~ dirichlet(alpha);
+  // estimatedProportionsVecSimp ~ dirichlet(alpha);
 
   // Note that the gamma distribution is in terms of shape and rate
   // i.e. y ~ gamma(alpha, beta)
-  // this means that for our case: E(nu) = 2/0.1 = 20 !
+  // this means that for our case: E(nu) = 2/0.01 = 200 !!
   nu ~ gamma(2, 0.1);
 
   // NOTE: Is it possible to vectorize some of this code????

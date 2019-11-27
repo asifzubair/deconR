@@ -39,10 +39,11 @@ parameters{
   // Estimated precision in the underlying cell types
   // (NOTE: At some point, make >=2 cell types script, this will need to be a vector).
   // Also, "precision" is used here as a throwback to implementing this originally in JAGS.
-  // This shold be re-build using variance/SD instead.
+  // This should be re-build using variance/SD instead.
   vector<lower=0>[numCellTypes] Sigma;
 
   // unknown/unmeasured *true* vector of proportions. These unmeasured values are treated as parameters.
+  // QUESTION: Should this be a matrix ? [numSamples, numCellTypes]
   vector[numSamples] trueProp;
 
 }
